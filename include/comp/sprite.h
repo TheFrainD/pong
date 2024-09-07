@@ -4,9 +4,8 @@
 
 namespace pong::comp {
 
-// Sprite renderer component
 // Only supports colored rectangles
-struct SpriteRenderer {
+struct Sprite {
   Vector2 size;
   Color color;
 };
