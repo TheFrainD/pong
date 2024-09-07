@@ -10,10 +10,13 @@ add_executable(${PROJECT_NAME}
         include/game.h
         src/game.cpp
         include/comp/player.h
-        include/comp/sprite_renderer.h
+        include/comp/sprite.h
         include/sys/render.h
         src/sys/render.cpp
         include/comp/transform.h
+        include/sys/player_controller.h
+        include/comp/paddle.h
+        src/sys/player_controller.cpp
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
