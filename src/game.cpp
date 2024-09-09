@@ -17,7 +17,7 @@ entt::registry &Game::GetRegistry() noexcept { return registry_; }
 void Game::run() noexcept {
   InitWindow(settings_.window_width, settings_.window_height, kTitle);
 
-  sys::ScriptSystem::OnStart(registry_);
+  script_system_.OnStart(registry_);
 
   // Main loop
   while (!WindowShouldClose()) {
@@ -35,13 +35,13 @@ void Game::run() noexcept {
 }
 
 void Game::Update(float const delta_time) noexcept {
-  sys::ScriptSystem::Update(registry_, delta_time);
-  sys::PlayerControllerUpdate(registry_, delta_time, settings_.window_height);
+  script_system_.Update(registry_, delta_time);
 }
 
 void Game::Render() noexcept { sys::RenderSprites(registry_); }
 
-Game::Game(Game::Settings const settings) noexcept : settings_(settings) {
+Game::Game(Game::Settings const settings) noexcept
+    : settings_(settings), script_system_(registry_) {
   constexpr auto kPaddleXOffset = 50.0F;
   constexpr auto kPaddleSize = Vector2(28.0F, 96.0F);
   constexpr auto kPaddleColor = BLACK;

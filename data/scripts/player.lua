@@ -1,11 +1,15 @@
 local Input = require("Input")
 
-function onStart()
-    print("Hello, Pong!")
-end
-
 function update(deltaTime)
-    if Input.IsKeyDown(Input.Key.Space) then
-        print("Space is down!")
+    local speed = 200.0
+    local transform = GetComponent("Transform")
+    if not transform then
+        return
+    end
+
+    if Input.IsKeyDown(Input.Key.W) then
+        transform.position.y = transform.position.y - speed * deltaTime;
+    elseif Input.IsKeyDown(Input.Key.S) then
+        transform.position.y = transform.position.y + speed * deltaTime;
     end
 end
