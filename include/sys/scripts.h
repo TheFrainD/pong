@@ -3,6 +3,8 @@
 #include <entt/entity/registry.hpp>
 #include <sol/sol.hpp>
 
+#include "comp/script.h"
+
 namespace pong::sys {
 
 class ScriptSystem {
@@ -15,9 +17,11 @@ class ScriptSystem {
   sol::state &GetState() noexcept { return state_; }
 
  private:
-  void LoadInputModule();
+  void RegisterComponents(entt::registry &registry);
+  void RegisterInputModule();
+  void RegisterSystemModule();
 
-  void SetContext(const entt::entity &entity);
+  void SetContext(const entt::entity &entity, const comp::Script &script);
 
   sol::state state_;
 };

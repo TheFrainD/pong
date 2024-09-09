@@ -42,6 +42,8 @@ void Game::Render() noexcept { sys::RenderSprites(registry_); }
 
 Game::Game(Game::Settings const settings) noexcept
     : settings_(settings), script_system_(registry_) {
+  using namespace std::literals;
+
   constexpr auto kPaddleXOffset = 50.0F;
   constexpr auto kPaddleSize = Vector2(28.0F, 96.0F);
   constexpr auto kPaddleColor = BLACK;
@@ -58,19 +60,22 @@ Game::Game(Game::Settings const settings) noexcept
   registry_.emplace<comp::Sprite>(player1, kPaddleSize, kPaddleColor);
   registry_.emplace<comp::Script>(
       player1, script_system_.GetState(),
-      "/home/frain/projects/pong/data/scripts/player.lua");
-  //  registry_.emplace<comp::Player>(player1, kPlayerSpeed);
-  //  registry_.emplace<comp::Paddle>(player1, comp::Paddle::Side::kLeft);
-  //
-  //  // Create player2
-  //  auto player2 = registry_.create();
-  //  registry_.emplace<comp::Transform>(
-  //      player2, Vector2(settings_.window_width - kPaddleXOffset -
-  //      kPaddleSize.x,
-  //                       paddle_y_position));
-  //  registry_.emplace<comp::Sprite>(player2, kPaddleSize, kPaddleColor);
-  //  registry_.emplace<comp::Player>(player2, kPlayerSpeed);
-  //  registry_.emplace<comp::Paddle>(player2, comp::Paddle::Side::kRight);
+      "/home/frain/projects/pong/data/scripts/player.lua",
+      std::unordered_map<std::string, sol::object>{
+          {"isPlayerOne"s, sol::make_object(script_system_.GetState(), true)}});
+
+  // Create player2
+  auto player2 = registry_.create();
+  registry_.emplace<comp::Transform>(
+      player2, Vector2(settings_.window_width - kPaddleXOffset - kPaddleSize.x,
+                       paddle_y_position));
+  registry_.emplace<comp::Sprite>(player2, kPaddleSize, kPaddleColor);
+  registry_.emplace<comp::Script>(
+      player2, script_system_.GetState(),
+      "/home/frain/projects/pong/data/scripts/player.lua",
+      std::unordered_map<std::string, sol::object>{
+          {"isPlayerOne"s,
+           sol::make_object(script_system_.GetState(), false)}});
 }
 
 Game::~Game() { CloseWindow(); }
