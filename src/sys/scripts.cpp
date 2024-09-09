@@ -3,21 +3,75 @@
 #include <raylib.h>
 
 #include "comp/script.h"
+#include "comp/sprite.h"
 #include "comp/transform.h"
-
-pong::comp::Transform GetTransform(entt::registry &registry,
-                                   entt::entity entity) {
-  return registry.get<pong::comp::Transform>(entity);
-}
 
 namespace pong::sys {
 
 ScriptSystem::ScriptSystem(entt::registry &registry) {
   state_.open_libraries(sol::lib::base, sol::lib::package);
 
+  RegisterComponents(registry);
+  RegisterSystemModule();
+  RegisterInputModule();
+}
+
+void ScriptSystem::RegisterInputModule() {
+  auto key_codes = state_.create_table();
+  key_codes["Space"] = KEY_SPACE;
+  key_codes["W"] = KEY_W;
+  key_codes["S"] = KEY_S;
+  key_codes["Up"] = KEY_UP;
+  key_codes["Down"] = KEY_DOWN;
+
+  auto input = state_.create_table();
+  input.set_function("IsKeyDown", &IsKeyDown);
+  input["Key"] = key_codes;
+
+  state_["package"]["loaded"]["Input"] = input;
+}
+
+void ScriptSystem::OnStart(entt::registry &registry) {
+  auto view = registry.view<comp::Script>();
+  for (const auto &entity : view) {
+    auto &script = view.get<comp::Script>(entity);
+
+    SetContext(entity, script);
+    if (script.on_start.valid()) {
+      script.on_start();
+    }
+  }
+}
+
+void ScriptSystem::Update(entt::registry &registry, float delta_time) {
+  auto view = registry.view<comp::Script>();
+  for (const auto &entity : view) {
+    auto &script = view.get<comp::Script>(entity);
+
+    SetContext(entity, script);
+    if (script.update.valid()) {
+      script.update(delta_time);
+    }
+  }
+}
+
+void ScriptSystem::SetContext(const entt::entity &entity,
+                              const comp::Script &script) {
+  auto ctx = state_.create_table();
+  ctx["entity"] = entity;
+
+  for (const auto &[name, value] : script.params) {
+    ctx[name] = value;
+  }
+
+  state_["ctx"] = ctx;
+}
+
+void ScriptSystem::RegisterComponents(entt::registry &registry) {
   state_.new_usertype<Vector2>("Vector2", "x", &Vector2::x, "y", &Vector2::y);
   state_.new_usertype<comp::Transform>("Transform", "position",
                                        &comp::Transform::position);
+  state_.new_usertype<comp::Sprite>("Sprite", "size", &comp::Sprite::size);
 
   state_.set_function(
       "GetComponent", [&](const std::string &name) -> sol::object {
@@ -32,53 +86,24 @@ ScriptSystem::ScriptSystem(entt::registry &registry) {
           return sol::make_object(
               state_, std::ref(registry.get<comp::Transform>(entity)));
         }
+
+        if (name == "Sprite") {
+          return sol::make_object(state_,
+                                  std::ref(registry.get<comp::Sprite>(entity)));
+        }
         return sol::nil;
       });
-
-  LoadInputModule();
 }
 
-void ScriptSystem::LoadInputModule() {
-  auto input = state_.create_table();
-  input.set_function("IsKeyDown", &IsKeyDown);
+void ScriptSystem::RegisterSystemModule() {
+  auto window = state_.create_table();
+  window.set_function("GetWidth", &GetScreenWidth);
+  window.set_function("GetHeight", &GetScreenHeight);
 
-  auto key_codes = state_.create_table();
-  key_codes["Space"] = KEY_SPACE;
-  key_codes["W"] = KEY_W;
-  key_codes["S"] = KEY_S;
-  input["Key"] = key_codes;
+  auto system = state_.create_table();
+  system["Window"] = window;
 
-  state_["package"]["loaded"]["Input"] = input;
-}
-
-void ScriptSystem::OnStart(entt::registry &registry) {
-  auto view = registry.view<comp::Script>();
-  for (const auto &entity : view) {
-    auto &script = view.get<comp::Script>(entity);
-
-    SetContext(entity);
-    if (script.on_start_.valid()) {
-      script.on_start_();
-    }
-  }
-}
-
-void ScriptSystem::Update(entt::registry &registry, float delta_time) {
-  auto view = registry.view<comp::Script>();
-  for (const auto &entity : view) {
-    auto &script = view.get<comp::Script>(entity);
-
-    SetContext(entity);
-    if (script.update_.valid()) {
-      script.update_(delta_time);
-    }
-  }
-}
-
-void ScriptSystem::SetContext(const entt::entity &entity) {
-  auto ctx = state_.create_table();
-  ctx["entity"] = entity;
-  state_["ctx"] = ctx;
+  state_["package"]["loaded"]["System"] = system;
 }
 
 }  // namespace pong::sys

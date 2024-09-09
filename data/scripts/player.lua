@@ -1,15 +1,32 @@
-local Input = require("Input")
+local Input = require "Input"
+local System = require "System"
 
 function update(deltaTime)
     local speed = 200.0
+
     local transform = GetComponent("Transform")
-    if not transform then
+    local sprite = GetComponent("Sprite")
+
+    if not transform or not sprite then
         return
     end
 
-    if Input.IsKeyDown(Input.Key.W) then
-        transform.position.y = transform.position.y - speed * deltaTime;
-    elseif Input.IsKeyDown(Input.Key.S) then
-        transform.position.y = transform.position.y + speed * deltaTime;
+    local upKey
+    local downKey
+
+    if ctx.isPlayerOne then
+        upKey = Input.Key.W
+        downKey = Input.Key.S
+    else
+        upKey = Input.Key.Up
+        downKey = Input.Key.Down
+    end
+
+    local position = transform.position
+
+    if Input.IsKeyDown(upKey) and position.y > 0 then
+        position.y = position.y - speed * deltaTime;
+    elseif Input.IsKeyDown(downKey) and position.y < (System.Window.GetHeight() - sprite.size.y) then
+        position.y = position.y + speed * deltaTime;
     end
 end
