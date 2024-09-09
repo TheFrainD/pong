@@ -33,3 +33,11 @@ target_link_libraries(${PROJECT_NAME}
         sol2::sol2
         spdlog::spdlog
 )
+
+add_custom_target(copy_data
+        COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different
+        "${CMAKE_CURRENT_SOURCE_DIR}/data/"
+        "$<TARGET_FILE_DIR:${PROJECT_NAME}>/data"
+        COMMENT "Copying data"
+)
+add_dependencies(${PROJECT_NAME} copy_data)

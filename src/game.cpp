@@ -45,7 +45,6 @@ Game::Game(Game::Settings const settings) noexcept
   constexpr auto kPaddleXOffset = 50.0F;
   constexpr auto kPaddleSize = Vector2(28.0F, 96.0F);
   constexpr auto kPaddleColor = BLACK;
-  ;
 
   const auto paddle_y_position =
       (settings_.window_height / 2.0F) - (kPaddleSize.y / 2.0F);
@@ -57,8 +56,7 @@ Game::Game(Game::Settings const settings) noexcept
       player1, Vector2(kPaddleXOffset, paddle_y_position));
   registry_.emplace<comp::Sprite>(player1, kPaddleSize, kPaddleColor);
   registry_.emplace<comp::Script>(
-      player1, script_system_.GetState(),
-      "/home/frain/projects/pong/data/scripts/player.lua",
+      player1, script_system_.GetState(), "data/scripts/player.lua",
       std::unordered_map<std::string, sol::object>{
           {"isPlayerOne"s, sol::make_object(script_system_.GetState(), true)}});
 
@@ -70,8 +68,7 @@ Game::Game(Game::Settings const settings) noexcept
                        paddle_y_position));
   registry_.emplace<comp::Sprite>(player2, kPaddleSize, kPaddleColor);
   registry_.emplace<comp::Script>(
-      player2, script_system_.GetState(),
-      "/home/frain/projects/pong/data/scripts/player.lua",
+      player2, script_system_.GetState(), "data/scripts/player.lua",
       std::unordered_map<std::string, sol::object>{
           {"isPlayerOne"s,
            sol::make_object(script_system_.GetState(), false)}});
