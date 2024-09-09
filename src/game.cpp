@@ -58,7 +58,7 @@ Game::Game(Game::Settings const settings) noexcept
   registry_.emplace<comp::Script>(
       player1, script_system_.GetState(), "data/scripts/player.lua",
       std::unordered_map<std::string, sol::object>{
-          {"isPlayerOne"s, sol::make_object(script_system_.GetState(), true)}});
+          {"isPlayerOne", sol::make_object(script_system_.GetState(), true)}});
 
   // Create player2
   auto player2 = registry_.create();
@@ -70,8 +70,7 @@ Game::Game(Game::Settings const settings) noexcept
   registry_.emplace<comp::Script>(
       player2, script_system_.GetState(), "data/scripts/player.lua",
       std::unordered_map<std::string, sol::object>{
-          {"isPlayerOne"s,
-           sol::make_object(script_system_.GetState(), false)}});
+          {"isPlayerOne", sol::make_object(script_system_.GetState(), false)}});
 }
 
 Game::~Game() { CloseWindow(); }
