@@ -9,7 +9,13 @@ namespace pong::comp {
 
 struct Script {
   Script(sol::state &state, const std::filesystem::path &path,
-         const std::unordered_map<std::string, sol::object> &params = {});
+         const std::unordered_map<std::string, sol::object> &params = {})
+      : params(params) {
+    state.script_file(path);
+
+    on_start = state["onStart"];
+    update = state["update"];
+  }
 
   sol::function on_start;
   sol::function update;

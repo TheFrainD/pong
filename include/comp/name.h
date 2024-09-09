@@ -11,6 +11,7 @@ struct Name {
 
   explicit Name(const std::string &name) : name(name) {
     if (names_.contains(name)) {
+      // TODO: Catch these issues
       throw std::runtime_error{"Entity with the name \"" + name +
                                "\" already exists!"};
     }
