@@ -15,7 +15,7 @@ class Game {
   explicit Game(Settings settings) noexcept;
   ~Game();
 
-  void run() noexcept;
+  void Run() noexcept;
 
   entt::registry &GetRegistry() noexcept;
 
