@@ -16,7 +16,7 @@ A simple Pong clone built as part of my game development journey.
 
 ## Requirements
 
-- **CMake 3.22 or later** is required. You can download it from
+- **CMake 3.24 or later** is required. You can download it from
   the [official CMake website](https://cmake.org/download/).
 - **Conan 2.0 or later** You can install Conan by following the official
   guide [here](https://docs.conan.io/2/installation.html).
@@ -33,9 +33,8 @@ A simple Pong clone built as part of my game development journey.
 2. **Build the project with CMake**:
 
     ```bash
-    mkdir build && cd build
-    cmake .. -DCMAKE_PROJECT_TOP_LEVEL_INCLUDES=third-party/cmake-conan/conan_provider.cmake -DCMAKE_BUILD_TYPE=Release
-    cmake --build .
+    cmake -S . -B build -DCMAKE_PROJECT_TOP_LEVEL_INCLUDES=third-party/cmake-conan/conan_provider.cmake -DCMAKE_BUILD_TYPE=Release
+    cmake --build build
     ```
 
    *Note*: This project uses **cmake-conan** to manage dependencies. Ensure Conan 2.0+ is installed before building.
@@ -43,6 +42,7 @@ A simple Pong clone built as part of my game development journey.
 3. **Run the game**:
 
     ```bash
+    cd build
     ./pong
     ```
 
