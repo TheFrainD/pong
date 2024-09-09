@@ -2,6 +2,8 @@
 
 #include <entt/entt.hpp>
 
+#include "sys/scripts.h"
+
 namespace pong {
 class Game {
  public:
@@ -15,7 +17,7 @@ class Game {
 
   void run() noexcept;
 
-  entt::registry& GetRegistry() noexcept;
+  entt::registry &GetRegistry() noexcept;
 
  private:
   static constexpr auto kTitle = "Pong";
@@ -25,5 +27,7 @@ class Game {
 
   Settings settings_;
   entt::registry registry_;
+
+  sys::ScriptSystem script_system_;
 };
 }  // namespace pong

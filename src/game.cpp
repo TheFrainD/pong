@@ -4,6 +4,7 @@
 
 #include "comp/paddle.h"
 #include "comp/player.h"
+#include "comp/script.h"
 #include "comp/sprite.h"
 #include "comp/transform.h"
 #include "sys/player_controller.h"
@@ -15,6 +16,8 @@ entt::registry &Game::GetRegistry() noexcept { return registry_; }
 
 void Game::run() noexcept {
   InitWindow(settings_.window_width, settings_.window_height, kTitle);
+
+  sys::ScriptSystem::OnStart(registry_);
 
   // Main loop
   while (!WindowShouldClose()) {
@@ -32,6 +35,7 @@ void Game::run() noexcept {
 }
 
 void Game::Update(float const delta_time) noexcept {
+  sys::ScriptSystem::Update(registry_, delta_time);
   sys::PlayerControllerUpdate(registry_, delta_time, settings_.window_height);
 }
 
@@ -52,17 +56,21 @@ Game::Game(Game::Settings const settings) noexcept : settings_(settings) {
   registry_.emplace<comp::Transform>(
       player1, Vector2(kPaddleXOffset, paddle_y_position));
   registry_.emplace<comp::Sprite>(player1, kPaddleSize, kPaddleColor);
-  registry_.emplace<comp::Player>(player1, kPlayerSpeed);
-  registry_.emplace<comp::Paddle>(player1, comp::Paddle::Side::kLeft);
-
-  // Create player2
-  auto player2 = registry_.create();
-  registry_.emplace<comp::Transform>(
-      player2, Vector2(settings_.window_width - kPaddleXOffset - kPaddleSize.x,
-                       paddle_y_position));
-  registry_.emplace<comp::Sprite>(player2, kPaddleSize, kPaddleColor);
-  registry_.emplace<comp::Player>(player2, kPlayerSpeed);
-  registry_.emplace<comp::Paddle>(player2, comp::Paddle::Side::kRight);
+  registry_.emplace<comp::Script>(
+      player1, script_system_.GetState(),
+      "/home/frain/projects/pong/data/scripts/player.lua");
+  //  registry_.emplace<comp::Player>(player1, kPlayerSpeed);
+  //  registry_.emplace<comp::Paddle>(player1, comp::Paddle::Side::kLeft);
+  //
+  //  // Create player2
+  //  auto player2 = registry_.create();
+  //  registry_.emplace<comp::Transform>(
+  //      player2, Vector2(settings_.window_width - kPaddleXOffset -
+  //      kPaddleSize.x,
+  //                       paddle_y_position));
+  //  registry_.emplace<comp::Sprite>(player2, kPaddleSize, kPaddleColor);
+  //  registry_.emplace<comp::Player>(player2, kPlayerSpeed);
+  //  registry_.emplace<comp::Paddle>(player2, comp::Paddle::Side::kRight);
 }
 
 Game::~Game() { CloseWindow(); }
