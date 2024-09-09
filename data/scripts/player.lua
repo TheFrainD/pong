@@ -2,7 +2,7 @@ local Input = require "Input"
 local System = require "System"
 
 function update(deltaTime)
-    local speed = 200.0
+    local speed = 250.0
 
     local transform = GetComponent("Transform")
     local sprite = GetComponent("Sprite")

@@ -2,19 +2,17 @@
 
 #include <raylib.h>
 
-#include "comp/paddle.h"
-#include "comp/player.h"
+#include "comp/name.h"
 #include "comp/script.h"
 #include "comp/sprite.h"
 #include "comp/transform.h"
-#include "sys/player_controller.h"
 #include "sys/render.h"
 
 namespace pong {
 
 entt::registry &Game::GetRegistry() noexcept { return registry_; }
 
-void Game::run() noexcept {
+void Game::Run() noexcept {
   InitWindow(settings_.window_width, settings_.window_height, kTitle);
 
   script_system_.OnStart(registry_);
@@ -47,14 +45,14 @@ Game::Game(Game::Settings const settings) noexcept
   constexpr auto kPaddleXOffset = 50.0F;
   constexpr auto kPaddleSize = Vector2(28.0F, 96.0F);
   constexpr auto kPaddleColor = BLACK;
-
-  constexpr auto kPlayerSpeed = 250.0F;
+  ;
 
   const auto paddle_y_position =
       (settings_.window_height / 2.0F) - (kPaddleSize.y / 2.0F);
 
   // Create player1
   auto player1 = registry_.create();
+  registry_.emplace<comp::Name>(player1, "Player1");
   registry_.emplace<comp::Transform>(
       player1, Vector2(kPaddleXOffset, paddle_y_position));
   registry_.emplace<comp::Sprite>(player1, kPaddleSize, kPaddleColor);
@@ -66,6 +64,7 @@ Game::Game(Game::Settings const settings) noexcept
 
   // Create player2
   auto player2 = registry_.create();
+  registry_.emplace<comp::Name>(player2, "Player2");
   registry_.emplace<comp::Transform>(
       player2, Vector2(settings_.window_width - kPaddleXOffset - kPaddleSize.x,
                        paddle_y_position));

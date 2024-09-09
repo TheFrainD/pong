@@ -1,6 +1,7 @@
 #pragma once
 
 #include <entt/entity/registry.hpp>
+#include <optional>
 #include <sol/sol.hpp>
 
 #include "comp/script.h"
@@ -22,6 +23,9 @@ class ScriptSystem {
   void RegisterSystemModule();
 
   void SetContext(const entt::entity &entity, const comp::Script &script);
+
+  static std::optional<entt::entity> GetEntity(entt::registry &registry,
+                                               const std::string &name);
 
   sol::state state_;
 };
