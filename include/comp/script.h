@@ -1,25 +1,19 @@
 #pragma once
 
 #include <filesystem>
-#include <sol/function.hpp>
-#include <sol/state.hpp>
+#include <sol/object.hpp>
 #include <unordered_map>
+
+#include "sys/scripts.h"
 
 namespace pong::comp {
 
 struct Script {
-  Script(sol::state &state, const std::filesystem::path &path,
-         const std::unordered_map<std::string, sol::object> &params = {})
-      : params(params) {
-    state.script_file(path);
+  explicit Script(sys::ScriptSystem &script_system,
+                  const std::filesystem::path &path)
+      : id(script_system.RegisterScript(path)) {}
 
-    on_start = state["onStart"];
-    update = state["update"];
-  }
-
-  sol::function on_start;
-  sol::function update;
-  std::unordered_map<std::string, sol::object> params;
+  int id;
 };
 
 }  // namespace pong::comp

@@ -4,25 +4,23 @@ local System = require "System"
 function update(deltaTime)
     local speed = 250.0
 
-    local transform = GetComponent("Transform")
-    local sprite = GetComponent("Sprite")
+    local transform = self.GetComponent("Transform")
+    local sprite = self.GetComponent("Sprite")
 
-    if not transform or not sprite then
-        return
-    end
+    local position = transform.position
 
     local upKey
     local downKey
 
-    if ctx.isPlayerOne then
+    local isPlayerOne = position.x == 50.0
+
+    if isPlayerOne then
         upKey = Input.Key.W
         downKey = Input.Key.S
     else
         upKey = Input.Key.Up
         downKey = Input.Key.Down
     end
-
-    local position = transform.position
 
     if Input.IsKeyDown(upKey) and position.y > 0 then
         position.y = position.y - speed * deltaTime;
