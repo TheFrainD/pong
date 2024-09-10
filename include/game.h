@@ -27,6 +27,7 @@ class Game {
 
   Settings settings_;
   entt::registry registry_;
+  entt::dispatcher dispatcher_;
 
   sys::ScriptSystem script_system_;
 };

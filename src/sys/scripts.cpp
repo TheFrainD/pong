@@ -2,6 +2,7 @@
 
 #include <raylib.h>
 
+#include "comp/collider.h"
 #include "comp/name.h"
 #include "comp/script.h"
 #include "comp/sprite.h"
@@ -9,10 +10,12 @@
 
 namespace pong::sys {
 
-ScriptSystem::ScriptSystem(entt::registry &registry) {
+ScriptSystem::ScriptSystem(entt::registry &registry,
+                           entt::dispatcher &dispatcher)
+    : registry_(registry), dispatcher_(dispatcher) {
   state_.open_libraries(sol::lib::base, sol::lib::package);
 
-  RegisterComponents(registry);
+  RegisterComponents();
   RegisterSystemModule();
   RegisterInputModule();
 }
@@ -32,8 +35,8 @@ void ScriptSystem::RegisterInputModule() {
   state_["package"]["loaded"]["Input"] = input;
 }
 
-void ScriptSystem::OnStart(entt::registry &registry) {
-  auto view = registry.view<comp::Script>();
+void ScriptSystem::OnStart() {
+  auto view = registry_.view<comp::Script>();
   for (const auto &entity : view) {
     auto &script = view.get<comp::Script>(entity);
 
@@ -42,7 +45,7 @@ void ScriptSystem::OnStart(entt::registry &registry) {
     if (!env.valid()) {
       continue;
     }
-    SetContext(registry, env, lua_script.params, entity);
+    SetContext(env, lua_script.params, entity);
 
     sol::function on_start = env["onStart"];
     if (on_start.valid()) {
@@ -51,8 +54,8 @@ void ScriptSystem::OnStart(entt::registry &registry) {
   }
 }
 
-void ScriptSystem::Update(entt::registry &registry, float delta_time) {
-  auto view = registry.view<comp::Script>();
+void ScriptSystem::Update(float delta_time) {
+  auto view = registry_.view<comp::Script>();
   for (const auto &entity : view) {
     auto &script = view.get<comp::Script>(entity);
 
@@ -69,21 +72,24 @@ void ScriptSystem::Update(entt::registry &registry, float delta_time) {
   }
 }
 
-void ScriptSystem::RegisterComponents(entt::registry &registry) {
+void ScriptSystem::RegisterComponents() {
   state_.new_usertype<Vector2>("Vector2", "x", &Vector2::x, "y", &Vector2::y);
   state_.new_usertype<comp::Transform>("Transform", "position",
                                        &comp::Transform::position);
   state_.new_usertype<comp::Sprite>("Sprite", "size", &comp::Sprite::size);
 
   state_.set_function("GetEntity",
-                      [this, &registry](const std::string &name) -> sol::table {
-                        auto entity = GetEntity(registry, name);
+                      [this](const std::string &name) -> sol::table {
+                        auto entity = GetEntity(name);
                         if (!entity.has_value()) {
                           return sol::nil;
                         }
 
-                        return CreateLuaEntity(registry, *entity);
+                        return CreateLuaEntity(*entity);
                       });
+
+  dispatcher_.sink<comp::CollisionEvent>()
+      .connect<&ScriptSystem::HandleCollision>(this);
 }
 
 void ScriptSystem::RegisterSystemModule() {
@@ -97,9 +103,8 @@ void ScriptSystem::RegisterSystemModule() {
   state_["package"]["loaded"]["System"] = system;
 }
 
-std::optional<entt::entity> ScriptSystem::GetEntity(entt::registry &registry,
-                                                    const std::string &name) {
-  auto view = registry.view<comp::Name>();
+std::optional<entt::entity> ScriptSystem::GetEntity(const std::string &name) {
+  auto view = registry_.view<comp::Name>();
   for (const auto &entity : view) {
     const auto &name_comp = view.get<comp::Name>(entity);
     if (name_comp.name == name) {
@@ -117,65 +122,75 @@ int ScriptSystem::RegisterScript(
   return script_envs_.size() - 1;
 }
 
-sol::table ScriptSystem::CreateLuaEntity(entt::registry &registry,
-                                         entt::entity entity) {
+void ScriptSystem::SetContext(
+    sol::environment &env,
+    const std::unordered_map<std::string, sol::object> &params,
+    entt::entity entity) {
+  env["self"] = CreateLuaEntity(entity);
+
+  for (const auto &[name, value] : params) {
+    env[name] = value;
+  }
+}
+
+void ScriptSystem::HandleCollision(const comp::CollisionEvent &event) {
+  if (registry_.all_of<comp::Script>(event.a)) {
+    auto script = registry_.get<comp::Script>(event.a);
+
+    auto &lua_script = script_envs_[script.id];
+    auto &env = lua_script.env;
+    if (!env.valid()) {
+      return;
+    }
+
+    sol::function on_collision = env["onCollision"];
+    if (on_collision.valid()) {
+      on_collision(CreateLuaEntity(event.b));
+    }
+  }
+}
+
+sol::table ScriptSystem::CreateLuaEntity(entt::entity entity) {
   auto lua_entity = state_.create_table();
   lua_entity["entity"] = entity;
   lua_entity.set_function(
       "GetComponent",
-      [this, lua_entity,
-       &registry](const std::string &component_name) -> sol::object {
+      [this, lua_entity](const std::string &component_name) -> sol::object {
         entt::entity this_entity = lua_entity["entity"];
         if (this_entity == entt::null) {
           return sol::nil;
         }
 
-        return GetComponent(registry, this_entity, component_name);
+        return GetComponent(this_entity, component_name);
       });
+  lua_entity.set_function("GetName", [this, lua_entity]() -> std::string {
+    entt::entity this_entity = lua_entity["entity"];
+    if (this_entity == entt::null) {
+      return {};
+    }
 
-  lua_entity.set_function("GetName",
-                          [this, lua_entity, &registry]() -> std::string {
-                            sol::table ctx = state_["ctx"];
-                            if (!ctx) {
-                              return {};
-                            }
+    if (!registry_.all_of<comp::Name>(this_entity)) {
+      return {};
+    }
 
-                            entt::entity entity = ctx["entity"];
-
-                            if (!registry.all_of<comp::Name>(entity)) {
-                              return {};
-                            }
-
-                            return registry.get<comp::Name>(entity).name;
-                          });
+    return registry_.get<comp::Name>(this_entity).name;
+  });
 
   return lua_entity;
 }
 
-sol::object ScriptSystem::GetComponent(entt::registry &registry,
-                                       entt::entity entity,
+sol::object ScriptSystem::GetComponent(entt::entity entity,
                                        const std::string &name) {
   if (name == "Transform") {
     return sol::make_object(state_,
-                            std::ref(registry.get<comp::Transform>(entity)));
+                            std::ref(registry_.get<comp::Transform>(entity)));
   }
 
   if (name == "Sprite") {
     return sol::make_object(state_,
-                            std::ref(registry.get<comp::Sprite>(entity)));
+                            std::ref(registry_.get<comp::Sprite>(entity)));
   }
   return sol::nil;
-}
-
-void ScriptSystem::SetContext(
-    entt::registry &registry, sol::environment &env,
-    const std::unordered_map<std::string, sol::object> &params,
-    entt::entity entity) {
-  env["self"] = CreateLuaEntity(registry, entity);
-
-  for (const auto &[name, value] : params) {
-    env[name] = value;
-  }
 }
 
 }  // namespace pong::sys
