@@ -2,10 +2,12 @@
 
 #include <raylib.h>
 
+#include "comp/collider.h"
 #include "comp/name.h"
 #include "comp/script.h"
 #include "comp/sprite.h"
 #include "comp/transform.h"
+#include "sys/physics.h"
 #include "sys/render.h"
 
 namespace pong {
@@ -16,7 +18,7 @@ void Game::Run() noexcept {
   InitWindow(settings_.window_width, settings_.window_height, kTitle);
   SetExitKey(KEY_NULL);
 
-  script_system_.OnStart(registry_);
+  script_system_.OnStart();
 
   // Main loop
   while (!WindowShouldClose()) {
@@ -34,13 +36,16 @@ void Game::Run() noexcept {
 }
 
 void Game::Update(float const delta_time) noexcept {
-  script_system_.Update(registry_, delta_time);
+  script_system_.Update(delta_time);
+  sys::PhysicsUpdate(registry_, dispatcher_);
+
+  dispatcher_.update();
 }
 
 void Game::Render() noexcept { sys::RenderSprites(registry_); }
 
 Game::Game(Game::Settings const settings) noexcept
-    : settings_(settings), script_system_(registry_) {
+    : settings_(settings), script_system_(registry_, dispatcher_) {
   using namespace std::literals;
 
   constexpr auto kPaddleXOffset = 50.0F;
@@ -60,6 +65,7 @@ Game::Game(Game::Settings const settings) noexcept
       player1, script_system_, "data/scripts/player.lua",
       std::unordered_map<std::string, sol::object>{
           {"isPlayerOne", sol::make_object(script_system_.GetState(), true)}});
+  registry_.emplace<comp::Collider>(player1, kPaddleSize);
 
   // Create player2
   auto player2 = registry_.create();
@@ -72,6 +78,19 @@ Game::Game(Game::Settings const settings) noexcept
       player2, script_system_, "data/scripts/player.lua",
       std::unordered_map<std::string, sol::object>{
           {"isPlayerOne", sol::make_object(script_system_.GetState(), false)}});
+  registry_.emplace<comp::Collider>(player2, kPaddleSize);
+
+  constexpr auto kBallSize = Vector2(16, 16);
+
+  auto ball = registry_.create();
+  registry_.emplace<comp::Name>(ball, "Ball");
+  registry_.emplace<comp::Transform>(
+      ball,
+      Vector2(settings_.window_width / 2.0, settings_.window_height / 2.0));
+  registry_.emplace<comp::Sprite>(ball, kBallSize, RED);
+  registry_.emplace<comp::Script>(ball, script_system_,
+                                  "data/scripts/ball.lua");
+  registry_.emplace<comp::Collider>(ball, kBallSize);
 }
 
 Game::~Game() { CloseWindow(); }

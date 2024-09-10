@@ -1,19 +1,22 @@
 #pragma once
 
 #include <entt/entity/registry.hpp>
+#include <entt/signal/dispatcher.hpp>
 #include <filesystem>
 #include <optional>
 #include <sol/sol.hpp>
 #include <vector>
 
+#include "comp/collider.h"
+
 namespace pong::sys {
 
 class ScriptSystem {
  public:
-  explicit ScriptSystem(entt::registry &registry);
+  ScriptSystem(entt::registry &registry, entt::dispatcher &dispatcher);
 
-  void OnStart(entt::registry &registry);
-  void Update(entt::registry &registry, float delta_time);
+  void OnStart();
+  void Update(float delta_time);
 
   sol::state &GetState() noexcept { return state_; }
 
@@ -27,22 +30,24 @@ class ScriptSystem {
     std::unordered_map<std::string, sol::object> params;
   };
 
-  void RegisterComponents(entt::registry &registry);
+  void RegisterComponents();
   void RegisterInputModule();
   void RegisterSystemModule();
 
-  void SetContext(entt::registry &registry, sol::environment &env,
+  void SetContext(sol::environment &env,
                   const std::unordered_map<std::string, sol::object> &params,
                   entt::entity entity);
-  sol::table CreateLuaEntity(entt::registry &registry, entt::entity entity);
-  sol::object GetComponent(entt::registry &registry, entt::entity entity,
-                           const std::string &name);
+  sol::table CreateLuaEntity(entt::entity entity);
+  sol::object GetComponent(entt::entity entity, const std::string &name);
 
-  static std::optional<entt::entity> GetEntity(entt::registry &registry,
-                                               const std::string &name);
+  void HandleCollision(const comp::CollisionEvent &event);
+
+  std::optional<entt::entity> GetEntity(const std::string &name);
 
   sol::state state_;
   std::vector<Script> script_envs_;
+  entt::registry &registry_;
+  entt::dispatcher &dispatcher_;
 };
 
 }  // namespace pong::sys

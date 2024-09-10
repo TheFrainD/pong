@@ -17,6 +17,9 @@ add_executable(${PROJECT_NAME}
         src/sys/scripts.cpp
         include/comp/script.h
         include/comp/name.h
+        include/comp/collider.h
+        include/sys/physics.h
+        src/sys/physics.cpp
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
