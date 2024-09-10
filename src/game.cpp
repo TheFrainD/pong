@@ -56,8 +56,10 @@ Game::Game(Game::Settings const settings) noexcept
   registry_.emplace<comp::Transform>(
       player1, Vector2(kPaddleXOffset, paddle_y_position));
   registry_.emplace<comp::Sprite>(player1, kPaddleSize, kPaddleColor);
-  registry_.emplace<comp::Script>(player1, script_system_,
-                                  "data/scripts/player.lua");
+  registry_.emplace<comp::Script>(
+      player1, script_system_, "data/scripts/player.lua",
+      std::unordered_map<std::string, sol::object>{
+          {"isPlayerOne", sol::make_object(script_system_.GetState(), true)}});
 
   // Create player2
   auto player2 = registry_.create();
@@ -66,8 +68,10 @@ Game::Game(Game::Settings const settings) noexcept
       player2, Vector2(settings_.window_width - kPaddleXOffset - kPaddleSize.x,
                        paddle_y_position));
   registry_.emplace<comp::Sprite>(player2, kPaddleSize, kPaddleColor);
-  registry_.emplace<comp::Script>(player2, script_system_,
-                                  "data/scripts/player.lua");
+  registry_.emplace<comp::Script>(
+      player2, script_system_, "data/scripts/player.lua",
+      std::unordered_map<std::string, sol::object>{
+          {"isPlayerOne", sol::make_object(script_system_.GetState(), false)}});
 }
 
 Game::~Game() { CloseWindow(); }

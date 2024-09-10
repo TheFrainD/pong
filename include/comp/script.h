@@ -9,9 +9,10 @@
 namespace pong::comp {
 
 struct Script {
-  explicit Script(sys::ScriptSystem &script_system,
-                  const std::filesystem::path &path)
-      : id(script_system.RegisterScript(path)) {}
+  explicit Script(
+      sys::ScriptSystem &script_system, const std::filesystem::path &path,
+      const std::unordered_map<std::string, sol::object> &params = {})
+      : id(script_system.RegisterScript(path, params)) {}
 
   int id;
 };
