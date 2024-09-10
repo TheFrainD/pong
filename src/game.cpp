@@ -48,8 +48,8 @@ Game::Game(Game::Settings const settings) noexcept
     : settings_(settings), script_system_(registry_, dispatcher_) {
   using namespace std::literals;
 
-  constexpr auto kPaddleXOffset = 50.0F;
-  constexpr auto kPaddleSize = Vector2(28.0F, 96.0F);
+  constexpr auto kPaddleXOffset = 30.0F;
+  constexpr auto kPaddleSize = Vector2(14.0F, 96.0F);
   constexpr auto kPaddleColor = BLACK;
 
   const auto paddle_y_position =
