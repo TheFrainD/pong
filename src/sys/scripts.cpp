@@ -13,7 +13,7 @@ namespace pong::sys {
 ScriptSystem::ScriptSystem(entt::registry &registry,
                            entt::dispatcher &dispatcher)
     : registry_(registry), dispatcher_(dispatcher) {
-  state_.open_libraries(sol::lib::base, sol::lib::package);
+  state_.open_libraries(sol::lib::base, sol::lib::package, sol::lib::math);
 
   RegisterComponents();
   RegisterSystemModule();
