@@ -12,8 +12,6 @@ function update(deltaTime)
     local upKey
     local downKey
 
-    local isPlayerOne = position.x == 50.0
-
     if isPlayerOne then
         upKey = Input.Key.W
         downKey = Input.Key.S

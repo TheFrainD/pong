@@ -37,11 +37,12 @@ void ScriptSystem::OnStart(entt::registry &registry) {
   for (const auto &entity : view) {
     auto &script = view.get<comp::Script>(entity);
 
-    auto &env = script_envs_[script.id];
+    auto &lua_script = script_envs_[script.id];
+    auto &env = lua_script.env;
     if (!env.valid()) {
       continue;
     }
-    SetContext(registry, env, entity);
+    SetContext(registry, env, lua_script.params, entity);
 
     sol::function on_start = env["onStart"];
     if (on_start.valid()) {
@@ -55,7 +56,8 @@ void ScriptSystem::Update(entt::registry &registry, float delta_time) {
   for (const auto &entity : view) {
     auto &script = view.get<comp::Script>(entity);
 
-    auto &env = script_envs_[script.id];
+    auto &lua_script = script_envs_[script.id];
+    auto &env = lua_script.env;
     if (!env.valid()) {
       continue;
     }
@@ -106,10 +108,12 @@ std::optional<entt::entity> ScriptSystem::GetEntity(entt::registry &registry,
   }
   return std::nullopt;
 }
-int ScriptSystem::RegisterScript(const std::filesystem::path &path) {
+int ScriptSystem::RegisterScript(
+    const std::filesystem::path &path,
+    const std::unordered_map<std::string, sol::object> &params) {
   sol::environment env(state_, sol::create, state_.globals());
   state_.script_file(path, env);
-  script_envs_.push_back(env);
+  script_envs_.emplace_back(env, params);
   return script_envs_.size() - 1;
 }
 
@@ -163,13 +167,15 @@ sol::object ScriptSystem::GetComponent(entt::registry &registry,
   return sol::nil;
 }
 
-void ScriptSystem::SetContext(entt::registry &registry, sol::environment &env,
-                              entt::entity entity) {
+void ScriptSystem::SetContext(
+    entt::registry &registry, sol::environment &env,
+    const std::unordered_map<std::string, sol::object> &params,
+    entt::entity entity) {
   env["self"] = CreateLuaEntity(registry, entity);
 
-  //  for (const auto &[name, value] : params) {
-  //    env[name] = value;
-  //  }
+  for (const auto &[name, value] : params) {
+    env[name] = value;
+  }
 }
 
 }  // namespace pong::sys
