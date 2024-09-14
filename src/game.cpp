@@ -61,10 +61,9 @@ Game::Game(Game::Settings const settings) noexcept
   registry_.emplace<comp::Transform>(
       player1, Vector2(kPaddleXOffset, paddle_y_position));
   registry_.emplace<comp::Sprite>(player1, kPaddleSize, kPaddleColor);
-  registry_.emplace<comp::Script>(
-      player1, script_system_, "data/scripts/player.lua",
-      std::unordered_map<std::string, sol::object>{
-          {"isPlayerOne", sol::make_object(script_system_.GetState(), true)}});
+  comp::AddScript(
+      registry_, script_system_, player1, "data/scripts/player.lua",
+      {{"isPlayerOne", sol::make_object(script_system_.GetState(), true)}});
   registry_.emplace<comp::Collider>(player1, kPaddleSize);
 
   // Create player2
@@ -74,10 +73,9 @@ Game::Game(Game::Settings const settings) noexcept
       player2, Vector2(settings_.window_width - kPaddleXOffset - kPaddleSize.x,
                        paddle_y_position));
   registry_.emplace<comp::Sprite>(player2, kPaddleSize, kPaddleColor);
-  registry_.emplace<comp::Script>(
-      player2, script_system_, "data/scripts/player.lua",
-      std::unordered_map<std::string, sol::object>{
-          {"isPlayerOne", sol::make_object(script_system_.GetState(), false)}});
+  comp::AddScript(
+      registry_, script_system_, player2, "data/scripts/player.lua",
+      {{"isPlayerOne", sol::make_object(script_system_.GetState(), false)}});
   registry_.emplace<comp::Collider>(player2, kPaddleSize);
 
   constexpr auto kBallSize = Vector2(16, 16);
@@ -88,8 +86,7 @@ Game::Game(Game::Settings const settings) noexcept
       ball,
       Vector2(settings_.window_width / 2.0, settings_.window_height / 2.0));
   registry_.emplace<comp::Sprite>(ball, kBallSize, RED);
-  registry_.emplace<comp::Script>(ball, script_system_,
-                                  "data/scripts/ball.lua");
+  comp::AddScript(registry_, script_system_, ball, "data/scripts/ball.lua");
   registry_.emplace<comp::Collider>(ball, kBallSize);
 }
 

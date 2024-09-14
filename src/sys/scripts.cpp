@@ -36,47 +36,54 @@ void ScriptSystem::RegisterInputModule() {
 }
 
 void ScriptSystem::OnStart() {
-  auto view = registry_.view<comp::Script>();
+  auto view = registry_.view<comp::ScriptComponent>();
   for (const auto &entity : view) {
-    auto &script = view.get<comp::Script>(entity);
+    auto &script_component = view.get<comp::ScriptComponent>(entity);
 
-    auto &lua_script = script_envs_[script.id];
-    auto &env = lua_script.env;
-    if (!env.valid()) {
-      continue;
-    }
-    SetContext(env, lua_script.params, entity);
+    for (auto &[name, id] : script_component.scripts) {
+      auto &lua_script = script_envs_[id];
+      auto &env = lua_script.env;
+      if (!env.valid()) {
+        continue;
+      }
+      SetContext(env, lua_script.params, entity);
 
-    sol::function on_start = env["onStart"];
-    if (on_start.valid()) {
-      on_start();
+      sol::function on_start = env["onStart"];
+      if (on_start.valid()) {
+        on_start();
+      }
     }
   }
 }
 
 void ScriptSystem::Update(float delta_time) {
-  auto view = registry_.view<comp::Script>();
+  auto view = registry_.view<comp::ScriptComponent>();
   for (const auto &entity : view) {
-    auto &script = view.get<comp::Script>(entity);
+    auto &script_component = view.get<comp::ScriptComponent>(entity);
 
-    auto &lua_script = script_envs_[script.id];
-    auto &env = lua_script.env;
-    if (!env.valid()) {
-      continue;
-    }
+    for (auto &[name, id] : script_component.scripts) {
+      auto &lua_script = script_envs_[id];
+      auto &env = lua_script.env;
+      if (!env.valid()) {
+        continue;
+      }
 
-    sol::function update = env["update"];
-    if (update.valid()) {
-      update(delta_time);
+      sol::function update = env["update"];
+      if (update.valid()) {
+        update(delta_time);
+      }
     }
   }
 }
 
 void ScriptSystem::RegisterComponents() {
   state_.new_usertype<Vector2>("Vector2", "x", &Vector2::x, "y", &Vector2::y);
+  state_.new_usertype<Color>("Color", "r", &Color::r, "g", &Color::g, "b",
+                             &Color::b, "a", &Color::a);
   state_.new_usertype<comp::Transform>("Transform", "position",
                                        &comp::Transform::position);
-  state_.new_usertype<comp::Sprite>("Sprite", "size", &comp::Sprite::size);
+  state_.new_usertype<comp::Sprite>("Sprite", "size", &comp::Sprite::size,
+                                    "color", &comp::Sprite::color);
 
   state_.set_function("GetEntity",
                       [this](const std::string &name) -> sol::table {
@@ -134,18 +141,20 @@ void ScriptSystem::SetContext(
 }
 
 void ScriptSystem::HandleCollision(const comp::CollisionEvent &event) {
-  if (registry_.all_of<comp::Script>(event.a)) {
-    auto script = registry_.get<comp::Script>(event.a);
+  if (registry_.all_of<comp::ScriptComponent>(event.a)) {
+    auto script_component = registry_.get<comp::ScriptComponent>(event.a);
 
-    auto &lua_script = script_envs_[script.id];
-    auto &env = lua_script.env;
-    if (!env.valid()) {
-      return;
-    }
+    for (auto &[name, id] : script_component.scripts) {
+      auto &lua_script = script_envs_[id];
+      auto &env = lua_script.env;
+      if (!env.valid()) {
+        return;
+      }
 
-    sol::function on_collision = env["onCollision"];
-    if (on_collision.valid()) {
-      on_collision(CreateLuaEntity(event.b));
+      sol::function on_collision = env["onCollision"];
+      if (on_collision.valid()) {
+        on_collision(CreateLuaEntity(event.b));
+      }
     }
   }
 }
@@ -191,9 +200,12 @@ sol::object ScriptSystem::GetComponent(entt::entity entity,
                             std::ref(registry_.get<comp::Sprite>(entity)));
   }
 
-  if (name == "Script" && registry_.all_of<comp::Script>(entity)) {
-    const auto id = registry_.get<comp::Script>(entity).id;
-    return script_envs_[id].env;
+  if (registry_.all_of<comp::ScriptComponent>(entity)) {
+    auto &script_component = registry_.get<comp::ScriptComponent>(entity);
+    if (script_component.scripts.contains(name)) {
+      const auto id = script_component.scripts.at(name);
+      return script_envs_[id].env;
+    }
   }
 
   return sol::nil;

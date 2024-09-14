@@ -22,6 +22,8 @@ function onCollision(other)
     else
         dy = math.random(10, 150)
     end
+
+    self.GetComponent("ChangeColor").changeColor()
 end
 
 function update(deltaTime)
