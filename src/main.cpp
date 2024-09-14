@@ -1,6 +1,11 @@
 #include "game.h"
 
-int main(int argc, char *argv[]) {
+#if defined(_WIN32) && !defined(_DEBUG)
+int __stdcall WinMain(void *hInstance, void *hPrevInstance, char *lpCmdLine,
+                      int nCmdShow) {
+#else
+int main(int argc, char **argv) {
+#endif
   using pong::Game;
 
   Game::Settings settings = {};

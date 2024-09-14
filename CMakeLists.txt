@@ -22,6 +22,14 @@ add_executable(${PROJECT_NAME}
         src/sys/physics.cpp
 )
 
+# Set the Windows subsystem to "windows" for a GUI application (no console)
+if (WIN32)
+  if (NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
+    set_target_properties(${PROJECT_NAME} PROPERTIES
+    LINK_FLAGS "/SUBSYSTEM:WINDOWS")
+  endif()
+endif()
+
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 find_package(raylib REQUIRED)

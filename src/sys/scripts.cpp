@@ -117,7 +117,7 @@ int ScriptSystem::RegisterScript(
     const std::filesystem::path &path,
     const std::unordered_map<std::string, sol::object> &params) {
   sol::environment env(state_, sol::create, state_.globals());
-  state_.script_file(path, env);
+  state_.script_file(path.string(), env);
   script_envs_.emplace_back(env, params);
   return script_envs_.size() - 1;
 }

@@ -155,6 +155,12 @@ Temporary Items
 # iCloud generated files
 *.icloud
 
+#===============#
+# Visual Studio 
+#===============#
+.vs/
+CMakeSettings.json
+
 #===================#
 # Visual Studio Code
 #===================#
