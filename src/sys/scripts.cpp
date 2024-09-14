@@ -190,6 +190,12 @@ sol::object ScriptSystem::GetComponent(entt::entity entity,
     return sol::make_object(state_,
                             std::ref(registry_.get<comp::Sprite>(entity)));
   }
+
+  if (name == "Script" && registry_.all_of<comp::Script>(entity)) {
+    const auto id = registry_.get<comp::Script>(entity).id;
+    return script_envs_[id].env;
+  }
+
   return sol::nil;
 }
 
