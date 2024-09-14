@@ -16,6 +16,7 @@ add_executable(${PROJECT_NAME}
         include/sys/scripts.h
         src/sys/scripts.cpp
         include/comp/script.h
+        src/comp/script.cpp
         include/comp/name.h
         include/comp/collider.h
         include/sys/physics.h
