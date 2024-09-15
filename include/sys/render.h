@@ -4,6 +4,6 @@
 
 namespace pong::sys {
 
-void RenderSprites(entt::registry &reg) noexcept;
+void Render(entt::registry &reg) noexcept;
 
 }

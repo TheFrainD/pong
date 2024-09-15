@@ -21,6 +21,7 @@ add_executable(${PROJECT_NAME}
         include/comp/collider.h
         include/sys/physics.h
         src/sys/physics.cpp
+        include/comp/label.h
 )
 
 # Set the Windows subsystem to "windows" for a GUI application (no console)

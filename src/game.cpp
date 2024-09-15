@@ -3,6 +3,7 @@
 #include <raylib.h>
 
 #include "comp/collider.h"
+#include "comp/label.h"
 #include "comp/name.h"
 #include "comp/script.h"
 #include "comp/sprite.h"
@@ -42,7 +43,7 @@ void Game::Update(float const delta_time) noexcept {
   dispatcher_.update();
 }
 
-void Game::Render() noexcept { sys::RenderSprites(registry_); }
+void Game::Render() noexcept { sys::Render(registry_); }
 
 Game::Game(Game::Settings const settings) noexcept
     : settings_(settings), script_system_(registry_, dispatcher_) {
@@ -52,7 +53,7 @@ Game::Game(Game::Settings const settings) noexcept
   constexpr auto kPaddleSize = Vector2(14.0F, 96.0F);
   constexpr auto kPaddleColor = RAYWHITE;
 
-  const auto paddle_y_position =
+  const float paddle_y_position =
       (settings_.window_height / 2.0F) - (kPaddleSize.y / 2.0F);
 
   // Create player1
@@ -84,15 +85,15 @@ Game::Game(Game::Settings const settings) noexcept
   registry_.emplace<comp::Name>(ball, "Ball");
   registry_.emplace<comp::Transform>(
       ball,
-      Vector2(settings_.window_width / 2.0, settings_.window_height / 2.0));
+      Vector2(settings_.window_width / 2.0F, settings_.window_height / 2.0F));
   registry_.emplace<comp::Sprite>(ball, kBallSize, RAYWHITE);
   comp::AddScript(registry_, script_system_, ball, "data/scripts/ball.lua");
   registry_.emplace<comp::Collider>(ball, kBallSize);
 
   constexpr auto kSeparatorSize = Vector2(10, 20);
-  constexpr int kSepartorOffset = 10;
+  constexpr auto kSepartorOffset = 10;
   const float kSeparatorXPos =
-      (settings_.window_width / 2.0) - (kSeparatorSize.x / 2.0);
+      (settings_.window_width / 2.0F) - (kSeparatorSize.x / 2.0F);
   const int kSeparatorCount =
       settings_.window_height / (kSeparatorSize.y + kSepartorOffset);
 
@@ -103,6 +104,23 @@ Game::Game(Game::Settings const settings) noexcept
                                        Vector2(kSeparatorXPos, kSeparatorYPos));
     registry_.emplace<comp::Sprite>(separator, kSeparatorSize, RAYWHITE);
   }
+
+  constexpr auto kScoreYPosition = 20.0F;
+  const auto kScoreXOffset = 40.0F;
+
+  auto player1Score = registry_.create();
+  auto label = registry_.emplace<comp::Label>(player1Score, "0", 64, RAYWHITE);
+  const auto kTextWidth = 36;
+  registry_.emplace<comp::Transform>(
+      player1Score,
+      Vector2((settings_.window_width / 2.0F) - kTextWidth - kScoreXOffset,
+              kScoreYPosition));
+
+  auto player2Score = registry_.create();
+  registry_.emplace<comp::Label>(player2Score, "0", 64, RAYWHITE);
+  registry_.emplace<comp::Transform>(
+      player2Score, Vector2((settings_.window_width / 2.0F) + kScoreXOffset,
+                            kScoreYPosition));
 }
 
 Game::~Game() { CloseWindow(); }
