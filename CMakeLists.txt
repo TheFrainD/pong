@@ -53,3 +53,5 @@ add_custom_target(copy_data
         COMMENT "Copying data"
 )
 add_dependencies(${PROJECT_NAME} copy_data)
+
+add_subdirectory(test)
