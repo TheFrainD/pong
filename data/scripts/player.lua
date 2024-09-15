@@ -1,11 +1,12 @@
-local Input = require "Input"
-local System = require "System"
+local Input = require 'Input'
+local System = require 'System'
+
 
 function update(deltaTime)
     local speed = 250.0
 
-    local transform = self.GetComponent("Transform")
-    local sprite = self.GetComponent("Sprite")
+    local transform = self.GetComponent('Transform')
+    local sprite = self.GetComponent('Sprite')
 
     local position = transform.position
 

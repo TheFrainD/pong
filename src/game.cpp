@@ -108,19 +108,26 @@ Game::Game(Game::Settings const settings) noexcept
   constexpr auto kScoreYPosition = 20.0F;
   const auto kScoreXOffset = 40.0F;
 
-  auto player1Score = registry_.create();
-  auto label = registry_.emplace<comp::Label>(player1Score, "0", 64, RAYWHITE);
+  auto player1_score = registry_.create();
+  registry_.emplace<comp::Name>(player1_score, "Player1Score");
+  registry_.emplace<comp::Label>(player1_score, "0", 64, RAYWHITE);
   const auto kTextWidth = 36;
   registry_.emplace<comp::Transform>(
-      player1Score,
+      player1_score,
       Vector2((settings_.window_width / 2.0F) - kTextWidth - kScoreXOffset,
               kScoreYPosition));
 
-  auto player2Score = registry_.create();
-  registry_.emplace<comp::Label>(player2Score, "0", 64, RAYWHITE);
+  auto player2_score = registry_.create();
+  registry_.emplace<comp::Name>(player2_score, "Player2Score");
+  registry_.emplace<comp::Label>(player2_score, "0", 64, RAYWHITE);
   registry_.emplace<comp::Transform>(
-      player2Score, Vector2((settings_.window_width / 2.0F) + kScoreXOffset,
-                            kScoreYPosition));
+      player2_score, Vector2((settings_.window_width / 2.0F) + kScoreXOffset,
+                             kScoreYPosition));
+
+  auto score_manager = registry_.create();
+  registry_.emplace<comp::Name>(score_manager, "ScoreManager");
+  comp::AddScript(registry_, script_system_, score_manager,
+                  "data/scripts/score.lua");
 }
 
 Game::~Game() { CloseWindow(); }
