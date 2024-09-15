@@ -1,4 +1,7 @@
 # Pong Clone
+![Build workflow](https://github.com/TheFrainD/pong/actions/workflows/build.yml/badge.svg?branch=main)
+![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 A simple Pong clone built as part of my game development journey.
 
