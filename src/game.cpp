@@ -27,7 +27,7 @@ void Game::Run() noexcept {
     Update(delta_time);
 
     BeginDrawing();
-    ClearBackground(RAYWHITE);
+    ClearBackground(BLACK);
 
     Render();
 
@@ -50,7 +50,7 @@ Game::Game(Game::Settings const settings) noexcept
 
   constexpr auto kPaddleXOffset = 30.0F;
   constexpr auto kPaddleSize = Vector2(14.0F, 96.0F);
-  constexpr auto kPaddleColor = BLACK;
+  constexpr auto kPaddleColor = RAYWHITE;
 
   const auto paddle_y_position =
       (settings_.window_height / 2.0F) - (kPaddleSize.y / 2.0F);
@@ -78,16 +78,31 @@ Game::Game(Game::Settings const settings) noexcept
       {{"isPlayerOne", sol::make_object(script_system_.GetState(), false)}});
   registry_.emplace<comp::Collider>(player2, kPaddleSize);
 
-  constexpr auto kBallSize = Vector2(16, 16);
+  constexpr auto kBallSize = Vector2(10, 10);
 
   auto ball = registry_.create();
   registry_.emplace<comp::Name>(ball, "Ball");
   registry_.emplace<comp::Transform>(
       ball,
       Vector2(settings_.window_width / 2.0, settings_.window_height / 2.0));
-  registry_.emplace<comp::Sprite>(ball, kBallSize, RED);
+  registry_.emplace<comp::Sprite>(ball, kBallSize, RAYWHITE);
   comp::AddScript(registry_, script_system_, ball, "data/scripts/ball.lua");
   registry_.emplace<comp::Collider>(ball, kBallSize);
+
+  constexpr auto kSeparatorSize = Vector2(10, 20);
+  constexpr int kSepartorOffset = 10;
+  const float kSeparatorXPos =
+      (settings_.window_width / 2.0) - (kSeparatorSize.x / 2.0);
+  const int kSeparatorCount =
+      settings_.window_height / (kSeparatorSize.y + kSepartorOffset);
+
+  for (int i = 0; i < kSeparatorCount; ++i) {
+    auto separator = registry_.create();
+    const float kSeparatorYPos = i * (kSeparatorSize.y + kSepartorOffset);
+    registry_.emplace<comp::Transform>(separator,
+                                       Vector2(kSeparatorXPos, kSeparatorYPos));
+    registry_.emplace<comp::Sprite>(separator, kSeparatorSize, RAYWHITE);
+  }
 }
 
 Game::~Game() { CloseWindow(); }
