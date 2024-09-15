@@ -28,6 +28,10 @@ class ScriptSystem {
   struct Script {
     sol::environment env;
     std::unordered_map<std::string, sol::object> params;
+
+    Script(sol::environment env,
+           std::unordered_map<std::string, sol::object> params)
+        : env(env), params(params) {}
   };
 
   void RegisterComponents();
