@@ -50,8 +50,8 @@ Game::Game(Game::Settings const settings) noexcept
   using namespace std::literals;
 
   constexpr auto kPaddleXOffset = 30.0F;
-  constexpr auto kPaddleSize = Vector2(14.0F, 96.0F);
   constexpr auto kPaddleColor = RAYWHITE;
+  constexpr Vector2 kPaddleSize = {14.0F, 96.0F};
 
   const float paddle_y_position =
       (settings_.window_height / 2.0F) - (kPaddleSize.y / 2.0F);
@@ -60,7 +60,7 @@ Game::Game(Game::Settings const settings) noexcept
   auto player1 = registry_.create();
   registry_.emplace<comp::Name>(player1, "Player1");
   registry_.emplace<comp::Transform>(
-      player1, Vector2(kPaddleXOffset, paddle_y_position));
+      player1, Vector2{kPaddleXOffset, paddle_y_position});
   registry_.emplace<comp::Sprite>(player1, kPaddleSize, kPaddleColor);
   comp::AddScript(
       registry_, script_system_, player1, "data/scripts/player.lua",
@@ -71,26 +71,26 @@ Game::Game(Game::Settings const settings) noexcept
   auto player2 = registry_.create();
   registry_.emplace<comp::Name>(player2, "Player2");
   registry_.emplace<comp::Transform>(
-      player2, Vector2(settings_.window_width - kPaddleXOffset - kPaddleSize.x,
-                       paddle_y_position));
+      player2, Vector2{settings_.window_width - kPaddleXOffset - kPaddleSize.x,
+                       paddle_y_position});
   registry_.emplace<comp::Sprite>(player2, kPaddleSize, kPaddleColor);
   comp::AddScript(
       registry_, script_system_, player2, "data/scripts/player.lua",
       {{"isPlayerOne", sol::make_object(script_system_.GetState(), false)}});
   registry_.emplace<comp::Collider>(player2, kPaddleSize);
 
-  constexpr auto kBallSize = Vector2(10, 10);
+  constexpr Vector2 kBallSize = {10.0F, 10.0F};
 
   auto ball = registry_.create();
   registry_.emplace<comp::Name>(ball, "Ball");
   registry_.emplace<comp::Transform>(
       ball,
-      Vector2(settings_.window_width / 2.0F, settings_.window_height / 2.0F));
+      Vector2{settings_.window_width / 2.0F, settings_.window_height / 2.0F});
   registry_.emplace<comp::Sprite>(ball, kBallSize, RAYWHITE);
   comp::AddScript(registry_, script_system_, ball, "data/scripts/ball.lua");
   registry_.emplace<comp::Collider>(ball, kBallSize);
 
-  constexpr auto kSeparatorSize = Vector2(10, 20);
+  constexpr Vector2 kSeparatorSize = {10.0F, 20.0F};
   constexpr auto kSepartorOffset = 10;
   const float kSeparatorXPos =
       (settings_.window_width / 2.0F) - (kSeparatorSize.x / 2.0F);
@@ -101,7 +101,7 @@ Game::Game(Game::Settings const settings) noexcept
     auto separator = registry_.create();
     const float kSeparatorYPos = i * (kSeparatorSize.y + kSepartorOffset);
     registry_.emplace<comp::Transform>(separator,
-                                       Vector2(kSeparatorXPos, kSeparatorYPos));
+                                       Vector2{kSeparatorXPos, kSeparatorYPos});
     registry_.emplace<comp::Sprite>(separator, kSeparatorSize, RAYWHITE);
   }
 
@@ -114,15 +114,16 @@ Game::Game(Game::Settings const settings) noexcept
   const auto kTextWidth = 36;
   registry_.emplace<comp::Transform>(
       player1_score,
-      Vector2((settings_.window_width / 2.0F) - kTextWidth - kScoreXOffset,
-              kScoreYPosition));
+      Vector2{(settings_.window_width / 2.0F) - kTextWidth - kScoreXOffset,
+              kScoreYPosition});
 
   auto player2_score = registry_.create();
   registry_.emplace<comp::Name>(player2_score, "Player2Score");
   registry_.emplace<comp::Label>(player2_score, "0", 64, RAYWHITE);
   registry_.emplace<comp::Transform>(
-      player2_score, Vector2((settings_.window_width / 2.0F) + kScoreXOffset,
-                             kScoreYPosition));
+      player2_score,
+      Vector2{static_cast<float>((settings_.window_width / 2) + kScoreXOffset),
+              kScoreYPosition});
 
   auto score_manager = registry_.create();
   registry_.emplace<comp::Name>(score_manager, "ScoreManager");
