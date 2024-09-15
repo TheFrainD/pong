@@ -3,6 +3,7 @@
 #include <raylib.h>
 
 #include "comp/collider.h"
+#include "comp/label.h"
 #include "comp/name.h"
 #include "comp/script.h"
 #include "comp/sprite.h"
@@ -27,6 +28,7 @@ void ScriptSystem::RegisterInputModule() {
   key_codes["S"] = KEY_S;
   key_codes["Up"] = KEY_UP;
   key_codes["Down"] = KEY_DOWN;
+  key_codes["Enter"] = KEY_ENTER;
 
   auto input = state_.create_table();
   input.set_function("IsKeyDown", &IsKeyDown);
@@ -84,6 +86,9 @@ void ScriptSystem::RegisterComponents() {
                                        &comp::Transform::position);
   state_.new_usertype<comp::Sprite>("Sprite", "size", &comp::Sprite::size,
                                     "color", &comp::Sprite::color);
+  state_.new_usertype<comp::Label>("Label", "text", &comp::Label::text,
+                                   "fontSize", &comp::Label::font_size, "color",
+                                   &comp::Label::color);
 
   state_.set_function("GetEntity",
                       [this](const std::string &name) -> sol::table {
@@ -198,6 +203,11 @@ sol::object ScriptSystem::GetComponent(entt::entity entity,
   if (name == "Sprite") {
     return sol::make_object(state_,
                             std::ref(registry_.get<comp::Sprite>(entity)));
+  }
+
+  if (name == "Label") {
+    return sol::make_object(state_,
+                            std::ref(registry_.get<comp::Label>(entity)));
   }
 
   if (registry_.all_of<comp::ScriptComponent>(entity)) {
