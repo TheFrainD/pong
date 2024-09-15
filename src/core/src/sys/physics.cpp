@@ -1,12 +1,12 @@
-#include "sys/physics.h"
+#include "core/sys/physics.h"
 
 #include <entt/entity/registry.hpp>
 #include <entt/signal/dispatcher.hpp>
 
-#include "comp/collider.h"
-#include "comp/transform.h"
+#include "core/comp/collider.h"
+#include "core/comp/transform.h"
 
-namespace pong::sys {
+namespace core::sys {
 
 void PhysicsUpdate(entt::registry &reg, entt::dispatcher &dispatcher) noexcept {
   using comp::Collider, comp::Transform, comp::CollisionEvent;
@@ -41,4 +41,4 @@ void PhysicsUpdate(entt::registry &reg, entt::dispatcher &dispatcher) noexcept {
   });
 }
 
-}  // namespace pong::sys
+}  // namespace core::sys

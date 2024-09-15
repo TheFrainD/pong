@@ -1,15 +1,15 @@
-#include "sys/scripts.h"
+#include "core/sys/scripts.h"
 
 #include <raylib.h>
 
-#include "comp/collider.h"
-#include "comp/label.h"
-#include "comp/name.h"
-#include "comp/script.h"
-#include "comp/sprite.h"
-#include "comp/transform.h"
+#include "core/comp/collider.h"
+#include "core/comp/label.h"
+#include "core/comp/name.h"
+#include "core/comp/script.h"
+#include "core/comp/sprite.h"
+#include "core/comp/transform.h"
 
-namespace pong::sys {
+namespace core::sys {
 
 ScriptSystem::ScriptSystem(entt::registry &registry,
                            entt::dispatcher &dispatcher)
@@ -221,4 +221,4 @@ sol::object ScriptSystem::GetComponent(entt::entity entity,
   return sol::nil;
 }
 
-}  // namespace pong::sys
+}  // namespace core::sys

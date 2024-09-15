@@ -4,7 +4,7 @@
 
 #include <string>
 
-namespace pong::comp {
+namespace core::comp {
 
 struct Label {
   std::string text;
@@ -12,4 +12,4 @@ struct Label {
   Color color;
 };
 
-}  // namespace pong::comp
+}  // namespace core::comp

@@ -4,7 +4,7 @@
 #include <stdexcept>
 #include <string>
 
-namespace pong::comp {
+namespace core::comp {
 
 struct Name {
   std::string name;
@@ -22,4 +22,4 @@ struct Name {
   std::set<std::string> names_;
 };
 
-}  // namespace pong::comp
+}  // namespace core::comp

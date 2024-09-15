@@ -1,14 +1,14 @@
-#include "sys/render.h"
+#include "core/sys/render.h"
 
 #include <raylib.h>
 
 #include <entt/entity/registry.hpp>
 
-#include "comp/label.h"
-#include "comp/sprite.h"
-#include "comp/transform.h"
+#include "core/comp/label.h"
+#include "core/comp/sprite.h"
+#include "core/comp/transform.h"
 
-namespace pong::sys {
+namespace core::sys {
 
 namespace {
 void RenderSprites(entt::registry &reg) noexcept {
@@ -34,4 +34,4 @@ void Render(entt::registry &reg) noexcept {
   RenderText(reg);
 }
 
-}  // namespace pong::sys
+}  // namespace core::sys

@@ -7,9 +7,9 @@
 #include <sol/sol.hpp>
 #include <vector>
 
-#include "comp/collider.h"
+#include "core/comp/collider.h"
 
-namespace pong::sys {
+namespace core::sys {
 
 class ScriptSystem {
  public:
@@ -54,4 +54,4 @@ class ScriptSystem {
   entt::dispatcher &dispatcher_;
 };
 
-}  // namespace pong::sys
+}  // namespace core::sys
