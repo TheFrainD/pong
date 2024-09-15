@@ -2,10 +2,10 @@
 
 #include <raylib.h>
 
-namespace pong::comp {
+namespace core::comp {
 
 struct Transform {
   Vector2 position;
 };
 
-}  // namespace pong::comp
+}  // namespace core::comp

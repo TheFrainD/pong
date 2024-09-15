@@ -2,7 +2,7 @@
 
 #include <entt/entity/fwd.hpp>
 
-namespace pong::sys {
+namespace core::sys {
 
 void Render(entt::registry &reg) noexcept;
 

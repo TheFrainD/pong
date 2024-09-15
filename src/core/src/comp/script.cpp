@@ -1,6 +1,6 @@
-#include "comp/script.h"
+#include "core/comp/script.h"
 
-namespace pong::comp {
+namespace core::comp {
 
 namespace {
 std::string SnakeCaseToPascalCase(const std::string &snake_case) {
@@ -44,4 +44,4 @@ void AddScript(entt::registry &registry, sys::ScriptSystem &script_system,
   registry.emplace<ScriptComponent>(entity).scripts[name] = id;
 }
 
-}  // namespace pong::comp
+}  // namespace core::comp

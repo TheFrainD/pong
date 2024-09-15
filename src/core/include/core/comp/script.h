@@ -6,9 +6,9 @@
 #include <string>
 #include <unordered_map>
 
-#include "sys/scripts.h"
+#include "core/sys/scripts.h"
 
-namespace pong::comp {
+namespace core::comp {
 
 struct ScriptComponent {
   std::unordered_map<std::string, int> scripts;
@@ -18,4 +18,4 @@ void AddScript(entt::registry &registry, sys::ScriptSystem &script_system,
                entt::entity entity, const std::filesystem::path &path,
                const std::unordered_map<std::string, sol::object> &params = {});
 
-}  // namespace pong::comp
+}  // namespace core::comp
