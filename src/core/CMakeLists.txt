@@ -30,3 +30,5 @@ target_link_libraries(
   EnTT::EnTT
   sol2::sol2
 )
+
+add_subdirectory(test)
