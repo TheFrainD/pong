@@ -19,6 +19,8 @@ add_library(
   "include/core/sys/physics.h"
   "include/core/sys/render.h"
   "include/core/sys/scripts.h"
+  "include/core/util/file_reader.h"
+  "src/util/file_reader.cpp"
 )
 
 target_include_directories(${CORE_LIB} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
