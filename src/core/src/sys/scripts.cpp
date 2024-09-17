@@ -12,8 +12,9 @@
 namespace core::sys {
 
 ScriptSystem::ScriptSystem(entt::registry &registry,
-                           entt::dispatcher &dispatcher)
-    : registry_(registry), dispatcher_(dispatcher) {
+                           entt::dispatcher &dispatcher,
+                           const util::FileReader &file_reader)
+    : registry_(registry), dispatcher_(dispatcher), file_reader_(file_reader) {
   state_.open_libraries(sol::lib::base, sol::lib::package, sol::lib::math);
 
   RegisterComponents();
@@ -129,7 +130,8 @@ int ScriptSystem::RegisterScript(
     const std::filesystem::path &path,
     const std::unordered_map<std::string, sol::object> &params) {
   sol::environment env(state_, sol::create, state_.globals());
-  state_.script_file(path.string(), env);
+  auto script = file_reader_(path);
+  state_.script(script, env);
   script_envs_.emplace_back(env, params);
   return script_envs_.size() - 1;
 }

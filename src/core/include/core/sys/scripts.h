@@ -8,12 +8,14 @@
 #include <vector>
 
 #include "core/comp/collider.h"
+#include "core/util/file_reader.h"
 
 namespace core::sys {
 
 class ScriptSystem {
  public:
-  ScriptSystem(entt::registry &registry, entt::dispatcher &dispatcher);
+  ScriptSystem(entt::registry &registry, entt::dispatcher &dispatcher,
+               const util::FileReader &file_reader = util::ReadFileToString);
 
   void OnStart();
   void Update(float delta_time);
@@ -52,6 +54,7 @@ class ScriptSystem {
   std::vector<Script> script_envs_;
   entt::registry &registry_;
   entt::dispatcher &dispatcher_;
+  util::FileReader file_reader_;
 };
 
 }  // namespace core::sys
