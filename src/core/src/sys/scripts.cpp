@@ -55,7 +55,7 @@ void ScriptSystem::OnStart() {
       }
       SetContext(env, lua_script.params, entity);
 
-      sol::function on_start = env["onStart"];
+      sol::function on_start = env["OnStart"];
       if (on_start.valid()) {
         on_start();
       }
@@ -75,7 +75,7 @@ void ScriptSystem::Update(float delta_time) {
         continue;
       }
 
-      sol::function update = env["update"];
+      sol::function update = env["Update"];
       if (update.valid()) {
         update(delta_time);
       }
@@ -170,7 +170,7 @@ void ScriptSystem::HandleCollision(const comp::CollisionEvent &event) {
         return;
       }
 
-      sol::function on_collision = env["onCollision"];
+      sol::function on_collision = env["OnCollision"];
       if (on_collision.valid()) {
         on_collision(CreateLuaEntity(event.b));
       }
