@@ -5,6 +5,7 @@
 #include <filesystem>
 #include <optional>
 #include <sol/sol.hpp>
+#include <utility>
 #include <vector>
 
 #include "core/comp/collider.h"
@@ -14,8 +15,17 @@ namespace core::sys {
 
 class ScriptSystem {
  public:
+  struct ScriptEntry {
+    sol::environment env;
+    std::unordered_map<std::string, sol::object> params;
+
+    ScriptEntry(sol::environment env,
+                std::unordered_map<std::string, sol::object> params)
+        : env(std::move(env)), params(std::move(params)) {}
+  };
+
   ScriptSystem(entt::registry &registry, entt::dispatcher &dispatcher,
-               const util::FileReader &file_reader = util::ReadFileToString);
+               util::FileReader file_reader = util::ReadFileToString);
 
   void OnStart();
   void Update(float delta_time);
@@ -26,16 +36,9 @@ class ScriptSystem {
       const std::filesystem::path &path,
       const std::unordered_map<std::string, sol::object> &params);
 
+  ScriptEntry &GetScript(int id);
+
  private:
-  struct Script {
-    sol::environment env;
-    std::unordered_map<std::string, sol::object> params;
-
-    Script(sol::environment env,
-           std::unordered_map<std::string, sol::object> params)
-        : env(env), params(params) {}
-  };
-
   void RegisterComponents();
   void RegisterInputModule();
   void RegisterSystemModule();
@@ -51,7 +54,7 @@ class ScriptSystem {
   std::optional<entt::entity> GetEntity(const std::string &name);
 
   sol::state state_;
-  std::vector<Script> script_envs_;
+  std::vector<ScriptEntry> script_entries_;
   entt::registry &registry_;
   entt::dispatcher &dispatcher_;
   util::FileReader file_reader_;
