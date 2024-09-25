@@ -14,8 +14,9 @@ struct ScriptComponent {
   std::unordered_map<std::string, int> scripts;
 };
 
-void AddScript(entt::registry &registry, sys::ScriptSystem &script_system,
-               entt::entity entity, const std::filesystem::path &path,
-               const std::unordered_map<std::string, sol::object> &params = {});
+ScriptComponent &AddScript(
+    entt::registry &registry, sys::ScriptSystem &script_system,
+    entt::entity entity, const std::filesystem::path &path,
+    const std::unordered_map<std::string, sol::object> &params = {});
 
 }  // namespace core::comp

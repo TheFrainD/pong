@@ -13,8 +13,10 @@ namespace core::sys {
 
 ScriptSystem::ScriptSystem(entt::registry &registry,
                            entt::dispatcher &dispatcher,
-                           const util::FileReader &file_reader)
-    : registry_(registry), dispatcher_(dispatcher), file_reader_(file_reader) {
+                           util::FileReader file_reader)
+    : registry_(registry),
+      dispatcher_(dispatcher),
+      file_reader_(std::move(file_reader)) {
   state_.open_libraries(sol::lib::base, sol::lib::package, sol::lib::math);
 
   RegisterComponents();
@@ -44,7 +46,7 @@ void ScriptSystem::OnStart() {
     auto &script_component = view.get<comp::ScriptComponent>(entity);
 
     for (auto &[name, id] : script_component.scripts) {
-      auto &lua_script = script_envs_[id];
+      auto &lua_script = script_entries_[id];
       auto &env = lua_script.env;
       if (!env.valid()) {
         continue;
@@ -65,7 +67,7 @@ void ScriptSystem::Update(float delta_time) {
     auto &script_component = view.get<comp::ScriptComponent>(entity);
 
     for (auto &[name, id] : script_component.scripts) {
-      auto &lua_script = script_envs_[id];
+      auto &lua_script = script_entries_[id];
       auto &env = lua_script.env;
       if (!env.valid()) {
         continue;
@@ -132,8 +134,8 @@ int ScriptSystem::RegisterScript(
   sol::environment env(state_, sol::create, state_.globals());
   auto script = file_reader_(path);
   state_.script(script, env);
-  script_envs_.emplace_back(env, params);
-  return script_envs_.size() - 1;
+  script_entries_.emplace_back(env, params);
+  return script_entries_.size() - 1;
 }
 
 void ScriptSystem::SetContext(
@@ -152,7 +154,7 @@ void ScriptSystem::HandleCollision(const comp::CollisionEvent &event) {
     auto script_component = registry_.get<comp::ScriptComponent>(event.a);
 
     for (auto &[name, id] : script_component.scripts) {
-      auto &lua_script = script_envs_[id];
+      auto &lua_script = script_entries_[id];
       auto &env = lua_script.env;
       if (!env.valid()) {
         return;
@@ -216,11 +218,15 @@ sol::object ScriptSystem::GetComponent(entt::entity entity,
     auto &script_component = registry_.get<comp::ScriptComponent>(entity);
     if (script_component.scripts.contains(name)) {
       const auto id = script_component.scripts.at(name);
-      return script_envs_[id].env;
+      return script_entries_[id].env;
     }
   }
 
   return sol::nil;
+}
+
+ScriptSystem::ScriptEntry &ScriptSystem::GetScript(const int id) {
+  return script_entries_[id];
 }
 
 }  // namespace core::sys

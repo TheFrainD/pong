@@ -42,7 +42,7 @@ TEST_F(CollisionTest, Collision) {
 
   core::sys::PhysicsUpdate(registry_, dispatcher_);
 
-  ASSERT_TRUE(HasCollision(e1, e2));
+  EXPECT_TRUE(HasCollision(e1, e2));
 }
 
 TEST_F(CollisionTest, NoCollision) {
@@ -56,7 +56,7 @@ TEST_F(CollisionTest, NoCollision) {
 
   core::sys::PhysicsUpdate(registry_, dispatcher_);
 
-  ASSERT_FALSE(HasCollision(e1, e2));
+  EXPECT_FALSE(HasCollision(e1, e2));
 }
 
 TEST_F(CollisionTest, OffsetCollision) {
@@ -71,7 +71,7 @@ TEST_F(CollisionTest, OffsetCollision) {
 
   core::sys::PhysicsUpdate(registry_, dispatcher_);
 
-  ASSERT_TRUE(HasCollision(e1, e2));
+  EXPECT_TRUE(HasCollision(e1, e2));
 }
 
 TEST_F(CollisionTest, OffsetNoCollision) {
@@ -86,5 +86,5 @@ TEST_F(CollisionTest, OffsetNoCollision) {
 
   core::sys::PhysicsUpdate(registry_, dispatcher_);
 
-  ASSERT_FALSE(HasCollision(e1, e2));
+  EXPECT_FALSE(HasCollision(e1, e2));
 }

@@ -1,5 +1,7 @@
 #include "core/comp/script.h"
 
+#include <stdexcept>
+
 namespace core::comp {
 
 namespace {
@@ -30,18 +32,22 @@ std::string GetModuleName(const std::filesystem::path &path) noexcept {
 }
 }  // namespace
 
-void AddScript(entt::registry &registry, sys::ScriptSystem &script_system,
-               entt::entity entity, const std::filesystem::path &path,
-               const std::unordered_map<std::string, sol::object> &params) {
+ScriptComponent &AddScript(
+    entt::registry &registry, sys::ScriptSystem &script_system,
+    entt::entity entity, const std::filesystem::path &path,
+    const std::unordered_map<std::string, sol::object> &params) {
   const auto id = script_system.RegisterScript(path, params);
   const auto name = GetModuleName(path);
 
   if (registry.all_of<ScriptComponent>(entity)) {
-    registry.get<ScriptComponent>(entity).scripts[name] = id;
-    return;
+    auto &comp = registry.get<ScriptComponent>(entity);
+    comp.scripts[name] = id;
+    return comp;
   }
 
-  registry.emplace<ScriptComponent>(entity).scripts[name] = id;
+  auto &comp = registry.emplace<ScriptComponent>(entity);
+  comp.scripts[name] = id;
+  return comp;
 }
 
 }  // namespace core::comp
