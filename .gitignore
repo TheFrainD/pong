@@ -188,3 +188,8 @@ CMakeSettings.json
 #====================#
 Testing/
 
+#==================#
+# Clangd
+#==================#
+compile_commands.json
+.cache/
