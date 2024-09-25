@@ -1,15 +1,11 @@
-enable_testing()
-
 find_package(GTest REQUIRED)
 
-add_executable(
-  ${PROJECT_NAME}-core-test
-  "main.cpp"
-  "collision_test.cpp"
-)
+include(GoogleTest)
 
-target_link_libraries(
-  ${PROJECT_NAME}-core-test
-  gtest::gtest
-  ${PROJECT_NAME}-core
-)
+add_executable(${PROJECT_NAME}-core-test "main.cpp" "collision_test.cpp")
+
+target_link_libraries(${PROJECT_NAME}-core-test gtest::gtest
+                      ${PROJECT_NAME}-core)
+
+gtest_discover_tests(${PROJECT_NAME}-core-test)
+
