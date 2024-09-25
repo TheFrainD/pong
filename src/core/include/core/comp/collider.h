@@ -5,7 +5,7 @@
 
 #include <entt/entity/entity.hpp>
 
-namespace pong::comp {
+namespace core::comp {
 
 struct Collider {
   Vector2 size;
@@ -19,4 +19,4 @@ struct CollisionEvent {
   CollisionEvent(entt::entity a, entt::entity b) : a(a), b(b) {}
 };
 
-}  // namespace pong::comp
+}  // namespace core::comp

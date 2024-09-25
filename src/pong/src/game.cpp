@@ -1,17 +1,18 @@
 #include "game.h"
 
+#include <core/comp/collider.h>
+#include <core/comp/label.h>
+#include <core/comp/name.h>
+#include <core/comp/script.h>
+#include <core/comp/sprite.h>
+#include <core/comp/transform.h>
+#include <core/sys/physics.h>
+#include <core/sys/render.h>
 #include <raylib.h>
 
-#include "comp/collider.h"
-#include "comp/label.h"
-#include "comp/name.h"
-#include "comp/script.h"
-#include "comp/sprite.h"
-#include "comp/transform.h"
-#include "sys/physics.h"
-#include "sys/render.h"
-
 namespace pong {
+
+using namespace core;
 
 entt::registry &Game::GetRegistry() noexcept { return registry_; }
 

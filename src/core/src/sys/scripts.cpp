@@ -1,19 +1,22 @@
-#include "sys/scripts.h"
+#include "core/sys/scripts.h"
 
 #include <raylib.h>
 
-#include "comp/collider.h"
-#include "comp/label.h"
-#include "comp/name.h"
-#include "comp/script.h"
-#include "comp/sprite.h"
-#include "comp/transform.h"
+#include "core/comp/collider.h"
+#include "core/comp/label.h"
+#include "core/comp/name.h"
+#include "core/comp/script.h"
+#include "core/comp/sprite.h"
+#include "core/comp/transform.h"
 
-namespace pong::sys {
+namespace core::sys {
 
 ScriptSystem::ScriptSystem(entt::registry &registry,
-                           entt::dispatcher &dispatcher)
-    : registry_(registry), dispatcher_(dispatcher) {
+                           entt::dispatcher &dispatcher,
+                           util::FileReader file_reader)
+    : registry_(registry),
+      dispatcher_(dispatcher),
+      file_reader_(std::move(file_reader)) {
   state_.open_libraries(sol::lib::base, sol::lib::package, sol::lib::math);
 
   RegisterComponents();
@@ -43,7 +46,7 @@ void ScriptSystem::OnStart() {
     auto &script_component = view.get<comp::ScriptComponent>(entity);
 
     for (auto &[name, id] : script_component.scripts) {
-      auto &lua_script = script_envs_[id];
+      auto &lua_script = script_entries_[id];
       auto &env = lua_script.env;
       if (!env.valid()) {
         continue;
@@ -64,7 +67,7 @@ void ScriptSystem::Update(float delta_time) {
     auto &script_component = view.get<comp::ScriptComponent>(entity);
 
     for (auto &[name, id] : script_component.scripts) {
-      auto &lua_script = script_envs_[id];
+      auto &lua_script = script_entries_[id];
       auto &env = lua_script.env;
       if (!env.valid()) {
         continue;
@@ -129,9 +132,10 @@ int ScriptSystem::RegisterScript(
     const std::filesystem::path &path,
     const std::unordered_map<std::string, sol::object> &params) {
   sol::environment env(state_, sol::create, state_.globals());
-  state_.script_file(path.string(), env);
-  script_envs_.emplace_back(env, params);
-  return script_envs_.size() - 1;
+  auto script = file_reader_(path);
+  state_.script(script, env);
+  script_entries_.emplace_back(env, params);
+  return script_entries_.size() - 1;
 }
 
 void ScriptSystem::SetContext(
@@ -150,7 +154,7 @@ void ScriptSystem::HandleCollision(const comp::CollisionEvent &event) {
     auto script_component = registry_.get<comp::ScriptComponent>(event.a);
 
     for (auto &[name, id] : script_component.scripts) {
-      auto &lua_script = script_envs_[id];
+      auto &lua_script = script_entries_[id];
       auto &env = lua_script.env;
       if (!env.valid()) {
         return;
@@ -214,11 +218,15 @@ sol::object ScriptSystem::GetComponent(entt::entity entity,
     auto &script_component = registry_.get<comp::ScriptComponent>(entity);
     if (script_component.scripts.contains(name)) {
       const auto id = script_component.scripts.at(name);
-      return script_envs_[id].env;
+      return script_entries_[id].env;
     }
   }
 
   return sol::nil;
 }
 
-}  // namespace pong::sys
+ScriptSystem::ScriptEntry &ScriptSystem::GetScript(const int id) {
+  return script_entries_[id];
+}
+
+}  // namespace core::sys
