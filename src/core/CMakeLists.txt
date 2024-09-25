@@ -20,17 +20,12 @@ add_library(
   "include/core/sys/render.h"
   "include/core/sys/scripts.h"
   "include/core/util/file_reader.h"
-  "src/util/file_reader.cpp"
-)
+  "src/util/file_reader.cpp")
 
-target_include_directories(${CORE_LIB} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
+target_include_directories(${CORE_LIB}
+                           PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
 
-target_link_libraries(
-  ${CORE_LIB}
-  PUBLIC
-  raylib
-  EnTT::EnTT
-  sol2::sol2
-)
+target_link_libraries(${CORE_LIB} PUBLIC raylib EnTT::EnTT sol2::sol2)
 
 add_subdirectory(test)
+
