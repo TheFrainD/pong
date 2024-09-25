@@ -38,7 +38,7 @@ TEST_F(ScriptTest, Basic) {
 TEST_F(ScriptTest, GetComponentWorks) {
   script_ =
       "test = false\n"
-      "function onStart()\n"
+      "function OnStart()\n"
       "  if self.GetComponent('Transform') then\n"
       "    test = true\n"
       "  end\n"
@@ -58,7 +58,7 @@ TEST_F(ScriptTest, GetComponentWorks) {
 
 TEST_F(ScriptTest, ComponentModified) {
   script_ =
-      "function onStart()\n"
+      "function OnStart()\n"
       "  self.GetComponent('Transform').position.x = 42.0\n"
       "end\n";
 
@@ -75,7 +75,7 @@ TEST_F(ScriptTest, ComponentModified) {
 TEST_F(ScriptTest, GetEntityWorks) {
   script_ =
       "test = false\n"
-      "function onStart()\n"
+      "function OnStart()\n"
       "  if GetEntity('TestName') then\n"
       "    test = true\n"
       "  end\n"
