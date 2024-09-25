@@ -1,6 +1,8 @@
 #include "core/comp/script.h"
 
-#include <stdexcept>
+#include <spdlog/spdlog.h>
+
+#include <optional>
 
 namespace core::comp {
 
@@ -32,11 +34,14 @@ std::string GetModuleName(const std::filesystem::path &path) noexcept {
 }
 }  // namespace
 
-ScriptComponent &AddScript(
+std::optional<ScriptComponent> AddScript(
     entt::registry &registry, sys::ScriptSystem &script_system,
     entt::entity entity, const std::filesystem::path &path,
     const std::unordered_map<std::string, sol::object> &params) {
   const auto id = script_system.RegisterScript(path, params);
+  if (id == -1) {
+    return std::nullopt;
+  }
   const auto name = GetModuleName(path);
 
   if (registry.all_of<ScriptComponent>(entity)) {
