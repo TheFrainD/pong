@@ -1,6 +1,7 @@
 #include "core/sys/scripts.h"
 
 #include <raylib.h>
+#include <spdlog/spdlog.h>
 
 #include "core/comp/collider.h"
 #include "core/comp/label.h"
@@ -8,6 +9,7 @@
 #include "core/comp/script.h"
 #include "core/comp/sprite.h"
 #include "core/comp/transform.h"
+#include "core/util/file_reader.h"
 
 namespace core::sys {
 
@@ -53,7 +55,7 @@ void ScriptSystem::OnStart() {
       }
       SetContext(env, lua_script.params, entity);
 
-      sol::function on_start = env["onStart"];
+      sol::function on_start = env["OnStart"];
       if (on_start.valid()) {
         on_start();
       }
@@ -73,7 +75,7 @@ void ScriptSystem::Update(float delta_time) {
         continue;
       }
 
-      sol::function update = env["update"];
+      sol::function update = env["Update"];
       if (update.valid()) {
         update(delta_time);
       }
@@ -132,7 +134,15 @@ int ScriptSystem::RegisterScript(
     const std::filesystem::path &path,
     const std::unordered_map<std::string, sol::object> &params) {
   sol::environment env(state_, sol::create, state_.globals());
-  auto script = file_reader_(path);
+  std::string script;
+
+  try {
+    script = file_reader_(path);
+  } catch (const util::FileReaderError &err) {
+    spdlog::error("Couldn't load script file: {}", err.what());
+    return -1;
+  }
+
   state_.script(script, env);
   script_entries_.emplace_back(env, params);
   return script_entries_.size() - 1;
@@ -160,7 +170,7 @@ void ScriptSystem::HandleCollision(const comp::CollisionEvent &event) {
         return;
       }
 
-      sol::function on_collision = env["onCollision"];
+      sol::function on_collision = env["OnCollision"];
       if (on_collision.valid()) {
         on_collision(CreateLuaEntity(event.b));
       }

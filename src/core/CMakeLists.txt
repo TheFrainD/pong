@@ -1,6 +1,7 @@
 find_package(raylib REQUIRED)
 find_package(EnTT REQUIRED)
 find_package(sol2 REQUIRED)
+find_package(spdlog REQUIRED)
 
 set(CORE_LIB ${PROJECT_NAME}-core)
 
@@ -25,7 +26,7 @@ add_library(
 target_include_directories(${CORE_LIB}
                            PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
 
-target_link_libraries(${CORE_LIB} PUBLIC raylib EnTT::EnTT sol2::sol2)
+target_link_libraries(${CORE_LIB} PUBLIC raylib EnTT::EnTT sol2::sol2
+                                         spdlog::spdlog)
 
 add_subdirectory(test)
-
