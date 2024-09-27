@@ -99,7 +99,7 @@ void ScriptSystem::RegisterComponents() {
                       [this](const std::string &name) -> sol::table {
                         auto entity = GetEntity(name);
                         if (!entity.has_value()) {
-                          return sol::nil;
+                          return sol::lua_nil;
                         }
 
                         return CreateLuaEntity(*entity);
@@ -186,7 +186,7 @@ sol::table ScriptSystem::CreateLuaEntity(entt::entity entity) {
       [this, lua_entity](const std::string &component_name) -> sol::object {
         entt::entity this_entity = lua_entity["entity"];
         if (this_entity == entt::null) {
-          return sol::nil;
+          return sol::lua_nil;
         }
 
         return GetComponent(this_entity, component_name);
@@ -232,7 +232,7 @@ sol::object ScriptSystem::GetComponent(entt::entity entity,
     }
   }
 
-  return sol::nil;
+  return sol::lua_nil;
 }
 
 ScriptSystem::ScriptEntry &ScriptSystem::GetScript(const int id) {

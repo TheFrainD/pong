@@ -62,7 +62,7 @@ Game::Game(Game::Settings const settings) noexcept
       player1, Vector2{kPaddleXOffset, paddle_y_position});
   registry_.emplace<core::comp::Sprite>(player1, kPaddleSize, kPaddleColor);
   core::comp::AddScript(
-      registry_, script_system_, player1, "data/scripts/player.lua",
+      registry_, script_system_, player1, "./data/scripts/player.lua",
       {{"isPlayerOne", sol::make_object(script_system_.GetState(), true)}});
   registry_.emplace<core::comp::Collider>(player1, kPaddleSize);
 
@@ -74,7 +74,7 @@ Game::Game(Game::Settings const settings) noexcept
                        paddle_y_position});
   registry_.emplace<core::comp::Sprite>(player2, kPaddleSize, kPaddleColor);
   core::comp::AddScript(
-      registry_, script_system_, player2, "data/scripts/player.lua",
+      registry_, script_system_, player2, "./data/scripts/player.lua",
       {{"isPlayerOne", sol::make_object(script_system_.GetState(), false)}});
   registry_.emplace<core::comp::Collider>(player2, kPaddleSize);
 
@@ -87,7 +87,7 @@ Game::Game(Game::Settings const settings) noexcept
       Vector2{settings_.window_width / 2.0F, settings_.window_height / 2.0F});
   registry_.emplace<core::comp::Sprite>(ball, kBallSize, RAYWHITE);
   core::comp::AddScript(registry_, script_system_, ball,
-                        "data/scripts/ball.lua");
+                        "./data/scripts/ball.lua");
   registry_.emplace<core::comp::Collider>(ball, kBallSize);
 
   constexpr Vector2 kSeparatorSize = {10.0F, 20.0F};
