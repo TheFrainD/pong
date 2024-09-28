@@ -6,7 +6,7 @@
 #include "core/comp/collider.h"
 #include "core/comp/label.h"
 #include "core/comp/name.h"
-#include "core/comp/script.h"
+#include "core/comp/script/script.h"
 #include "core/comp/sprite.h"
 #include "core/comp/transform.h"
 #include "core/util/file_reader.h"

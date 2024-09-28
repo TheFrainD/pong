@@ -1,4 +1,4 @@
-#include "core/comp/script.h"
+#include "core/comp/script/script.h"
 
 #include <spdlog/spdlog.h>
 

@@ -3,12 +3,15 @@
 #include <core/comp/collider.h>
 #include <core/comp/label.h>
 #include <core/comp/name.h>
-#include <core/comp/script.h>
+#include <core/comp/script/builder.h>
+#include <core/comp/script/script.h>
 #include <core/comp/sprite.h>
 #include <core/comp/transform.h>
 #include <core/sys/physics.h>
 #include <core/sys/render.h>
 #include <raylib.h>
+
+#include <sol/forward.hpp>
 
 namespace pong {
 
@@ -125,6 +128,18 @@ Game::Game(Game::Settings const settings) noexcept
       Vector2{
           static_cast<float>((settings_.window_width / 2.0F) + score_x_offset),
           kScoreYPosition});
+
+  // Test builder
+  auto builder = core::comp::ScriptBuilder::Create(
+      "function foo()\n"
+      "  print(test)\n"
+      "end\n",
+      script_system_.GetState());
+  builder->AddParameter("test", 42);
+
+  auto entry = builder->GetEntry();
+  sol::function foo = entry.env["foo"];
+  foo();
 
   auto score_manager = registry_.create();
   registry_.emplace<core::comp::Name>(score_manager, "ScoreManager");
