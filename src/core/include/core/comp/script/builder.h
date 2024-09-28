@@ -2,6 +2,7 @@
 
 #include <spdlog/spdlog.h>
 
+#include <filesystem>
 #include <optional>
 #include <sol/error.hpp>
 #include <sol/state.hpp>
@@ -12,7 +13,11 @@ namespace core::comp {
 
 class ScriptBuilder {
  public:
-  static std::optional<ScriptBuilder> Create(const std::string &script,
+  static std::optional<ScriptBuilder> Create(const std::string &name,
+                                             const std::string &script,
+                                             sol::state &state) noexcept;
+
+  static std::optional<ScriptBuilder> Create(const std::filesystem::path &path,
                                              sol::state &state) noexcept;
   template <typename T, typename... Args>
   ScriptBuilder &AddParameter(const std::string &name,

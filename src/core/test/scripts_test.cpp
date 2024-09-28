@@ -6,10 +6,10 @@
 #include <entt/signal/fwd.hpp>
 #include <sol/object.hpp>
 
-#include "core/comp/name.h"
 #include "core/comp/script/builder.h"
 #include "core/comp/script/script.h"
 #include "core/comp/transform.h"
+#include "core/entity/builder.h"
 
 class ScriptTest : public testing::Test {
  protected:
@@ -21,93 +21,80 @@ class ScriptTest : public testing::Test {
   core::sys::ScriptSystem script_system_;
 };
 
-using core::comp::ScriptBuilder;
-
-TEST_F(ScriptTest, Basic) {
-  auto script_builder =
-      ScriptBuilder::Create("test = 42", script_system_.GetState());
-
-  auto id = script_system_.RegisterScript(script_builder->GetEntry());
-  auto script_entry = script_system_.GetScript(id);
-
-  EXPECT_EQ(script_entry.env["test"].get<int>(), 42);
-}
+using core::entity::EntityBuilder;
 
 TEST_F(ScriptTest, GetComponentWorks) {
-  auto script_builder = ScriptBuilder::Create(
+  std::string script =
       "test = false\n"
       "function OnStart()\n"
       "  if self.GetComponent('Transform') then\n"
       "    test = true\n"
       "  end\n"
-      "end\n",
-      script_system_.GetState());
+      "end\n";
 
-  auto e = registry_.create();
-  registry_.emplace<core::comp::Transform>(e, Vector2{10.0F, 10.0F});
-  auto script_component = core::comp::AddScript(registry_, script_system_, e,
-                                                "", script_builder->GetEntry());
-  ASSERT_TRUE(script_component.has_value());
+  auto e = EntityBuilder("", registry_, script_system_)
+               .AddComponent<core::comp::Transform>(Vector2{10.0F, 10.0F})
+               .CreateScript(script, "")
+               .RegisterScript()
+               .GetEntity();
 
   script_system_.OnStart();
 
-  auto script_entry = script_system_.GetScript(script_component->scripts[""]);
+  auto script_component = registry_.get<core::comp::ScriptComponent>(e);
+  auto script_entry = script_system_.GetScript(script_component.scripts[""]);
   EXPECT_TRUE(script_entry.env["test"].get<bool>());
 }
 
 TEST_F(ScriptTest, ComponentModified) {
-  auto script_builder = ScriptBuilder::Create(
+  std::string script =
       "function OnStart()\n"
       "  self.GetComponent('Transform').position.x = 42.0\n"
-      "end\n",
-      script_system_.GetState());
+      "end\n";
 
-  auto e = registry_.create();
-  auto &transform =
-      registry_.emplace<core::comp::Transform>(e, Vector2{10.0F, 10.0F});
-  core::comp::AddScript(registry_, script_system_, e, "",
-                        script_builder->GetEntry());
+  auto e = EntityBuilder("", registry_, script_system_)
+               .AddComponent<core::comp::Transform>(Vector2{10.0F, 10.0F})
+               .CreateScript(script, "")
+               .RegisterScript()
+               .GetEntity();
 
   script_system_.OnStart();
 
+  auto transform = registry_.get<core::comp::Transform>(e);
   EXPECT_EQ(transform.position.x, 42.0F);
 }
 
 TEST_F(ScriptTest, GetEntityWorks) {
-  auto script_builder = ScriptBuilder::Create(
+  std::string script =
       "test = false\n"
       "function OnStart()\n"
       "  if GetEntity('TestName') then\n"
       "    test = true\n"
       "  end\n"
-      "end\n",
-      script_system_.GetState());
+      "end\n";
 
-  auto e1 = registry_.create();
-  auto script_component = core::comp::AddScript(registry_, script_system_, e1,
-                                                "", script_builder->GetEntry());
-  ASSERT_TRUE(script_component.has_value());
+  auto entity_builder = EntityBuilder("", registry_, script_system_);
 
-  auto e2 = registry_.create();
-  registry_.emplace<core::comp::Name>(e2, "TestName");
+  auto e1 =
+      entity_builder.CreateScript(script, "").RegisterScript().GetEntity();
+  auto e2 = entity_builder.New("TestName").GetEntity();
 
   script_system_.OnStart();
 
-  auto script_entry = script_system_.GetScript(script_component->scripts[""]);
+  auto script_component = registry_.get<core::comp::ScriptComponent>(e1);
+  auto script_entry = script_system_.GetScript(script_component.scripts[""]);
   EXPECT_TRUE(script_entry.env["test"].get<bool>());
 }
 
 TEST_F(ScriptTest, ParametesWork) {
-  auto script_builder = ScriptBuilder::Create("", script_system_.GetState())
-                            ->AddParameter("test", 42);
-
-  auto e = registry_.create();
-  auto script_component = core::comp::AddScript(registry_, script_system_, e,
-                                                "", script_builder.GetEntry());
-  ASSERT_TRUE(script_component.has_value());
+  auto e = EntityBuilder("", registry_, script_system_)
+               .CreateScript("", "")
+               .AddParameter("test", 42)
+               .RegisterScript()
+               .GetEntity();
 
   script_system_.OnStart();
 
-  auto script_entry = script_system_.GetScript(script_component->scripts[""]);
+  auto script_component = registry_.get<core::comp::ScriptComponent>(e);
+  auto script_entry = script_system_.GetScript(script_component.scripts[""]);
   EXPECT_EQ(script_entry.env["test"].get_or(0), 42);
 }
