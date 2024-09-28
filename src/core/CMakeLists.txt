@@ -7,11 +7,11 @@ set(CORE_LIB ${PROJECT_NAME}-core)
 
 add_library(
   ${CORE_LIB} STATIC
-  "src/comp/script/script.cpp"
   "src/comp/script/builder.cpp"
   "src/sys/physics.cpp"
   "src/sys/render.cpp"
   "src/sys/scripts.cpp"
+  "src/entity/builder.cpp"
   "include/core/comp/collider.h"
   "include/core/comp/label.h"
   "include/core/comp/name.h"
@@ -23,6 +23,7 @@ add_library(
   "include/core/sys/physics.h"
   "include/core/sys/render.h"
   "include/core/sys/scripts.h"
+  "include/core/entity/builder.h"
   "include/core/util/file_reader.h"
   "src/util/file_reader.cpp")
 

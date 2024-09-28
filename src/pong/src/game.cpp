@@ -9,8 +9,10 @@
 #include <core/comp/transform.h>
 #include <core/sys/physics.h>
 #include <core/sys/render.h>
+#include <fmt/format.h>
 #include <raylib.h>
 
+#include "core/entity/builder.h"
 #include "core/util/file_reader.h"
 
 namespace pong {
@@ -59,55 +61,37 @@ Game::Game(Game::Settings const settings) noexcept
   const float paddle_y_position =
       (settings_.window_height / 2.0F) - (kPaddleSize.y / 2.0F);
 
-  // Create player1
-  auto player1 = registry_.create();
-  registry_.emplace<core::comp::Name>(player1, "Player1");
-  registry_.emplace<core::comp::Transform>(
-      player1, Vector2{kPaddleXOffset, paddle_y_position});
-  registry_.emplace<core::comp::Sprite>(player1, kPaddleSize, kPaddleColor);
-  registry_.emplace<core::comp::Collider>(player1, kPaddleSize);
-  auto &lua_state = script_system_.GetState();
-  {
-    auto script_builder =
-        core::comp::ScriptBuilder::Create(
-            ReadFileToString("data/scripts/player.lua"), lua_state)
-            ->AddParameter("isPlayerOne", true);
-    core::comp::AddScript(registry_, script_system_, player1, "player",
-                          script_builder.GetEntry());
-  }
+  auto entity_builder =
+      core::entity::EntityBuilder("Player1", registry_, script_system_);
 
-  // Create player2
-  auto player2 = registry_.create();
-  registry_.emplace<core::comp::Name>(player2, "Player2");
-  registry_.emplace<core::comp::Transform>(
-      player2, Vector2{settings_.window_width - kPaddleXOffset - kPaddleSize.x,
-                       paddle_y_position});
-  registry_.emplace<core::comp::Sprite>(player2, kPaddleSize, kPaddleColor);
-  registry_.emplace<core::comp::Collider>(player2, kPaddleSize);
-  {
-    auto script_builder =
-        core::comp::ScriptBuilder::Create(
-            ReadFileToString("data/scripts/player.lua"), lua_state)
-            ->AddParameter("isPlayerOne", false);
-    core::comp::AddScript(registry_, script_system_, player2, "player",
-                          script_builder.GetEntry());
-  }
+  entity_builder
+      .AddComponent<core::comp::Transform>(
+          Vector2{kPaddleXOffset, paddle_y_position})
+      .AddComponent<core::comp::Sprite>(kPaddleSize, kPaddleColor)
+      .AddComponent<core::comp::Collider>(kPaddleSize)
+      .CreateScript("data/scripts/player.lua")
+      .AddParameter("isPlayerOne", true)
+      .RegisterScript();
+
+  entity_builder.New("Player2")
+      .AddComponent<core::comp::Transform>(
+          Vector2{settings_.window_width - kPaddleXOffset - kPaddleSize.x,
+                  paddle_y_position})
+      .AddComponent<core::comp::Sprite>(kPaddleSize, kPaddleColor)
+      .AddComponent<core::comp::Collider>(kPaddleSize)
+      .CreateScript("data/scripts/player.lua")
+      .AddParameter("isPlayerOne", false)
+      .RegisterScript();
 
   constexpr Vector2 kBallSize = {10.0F, 10.0F};
 
-  auto ball = registry_.create();
-  registry_.emplace<core::comp::Name>(ball, "Ball");
-  registry_.emplace<core::comp::Transform>(
-      ball,
-      Vector2{settings_.window_width / 2.0F, settings_.window_height / 2.0F});
-  registry_.emplace<core::comp::Sprite>(ball, kBallSize, RAYWHITE);
-  registry_.emplace<core::comp::Collider>(ball, kBallSize);
-  {
-    auto script_builder = core::comp::ScriptBuilder::Create(
-        ReadFileToString("data/scripts/ball.lua"), lua_state);
-    core::comp::AddScript(registry_, script_system_, ball, "ball",
-                          script_builder->GetEntry());
-  }
+  entity_builder.New("Ball")
+      .AddComponent<core::comp::Transform>(Vector2{
+          settings_.window_width / 2.0F, settings_.window_height / 2.0F})
+      .AddComponent<core::comp::Sprite>(kBallSize, RAYWHITE)
+      .AddComponent<core::comp::Collider>(kBallSize)
+      .CreateScript("data/scripts/ball.lua")
+      .RegisterScript();
 
   constexpr Vector2 kSeparatorSize = {10.0F, 20.0F};
   constexpr auto kSepartorOffset = 10;
@@ -117,42 +101,33 @@ Game::Game(Game::Settings const settings) noexcept
       settings_.window_height / (kSeparatorSize.y + kSepartorOffset);
 
   for (int i = 0; i < separator_count; ++i) {
-    auto separator = registry_.create();
     const float separator_y_pos = i * (kSeparatorSize.y + kSepartorOffset);
-    registry_.emplace<core::comp::Transform>(
-        separator, Vector2{separator_x_pos, separator_y_pos});
-    registry_.emplace<core::comp::Sprite>(separator, kSeparatorSize, RAYWHITE);
+    entity_builder.New(fmt::format("Separator {}", i))
+        .AddComponent<core::comp::Transform>(
+            Vector2{separator_x_pos, separator_y_pos})
+        .AddComponent<core::comp::Sprite>(kSeparatorSize, RAYWHITE);
   }
 
-  constexpr auto kScoreYPosition = 20.0F;
-  const auto score_x_offset = 40.0F;
+  auto create_score = [this, &entity_builder](int i) {
+    constexpr auto kScoreYPosition = 20.0F;
+    const auto score_x_offset = 40.0F;
+    const auto text_width = 36.0F;
 
-  auto player1_score = registry_.create();
-  registry_.emplace<core::comp::Name>(player1_score, "Player1Score");
-  registry_.emplace<core::comp::Label>(player1_score, "0", 64, RAYWHITE);
-  const auto text_width = 36;
-  registry_.emplace<core::comp::Transform>(
-      player1_score,
-      Vector2{(settings_.window_width / 2.0F) - text_width - score_x_offset,
-              kScoreYPosition});
+    entity_builder.New(fmt::format("Player{}Score", i))
+        .AddComponent<core::comp::Label>("0", 64, RAYWHITE)
+        .AddComponent<core::comp::Transform>(Vector2{
+            (settings_.window_width / 2.0F) - (text_width * (2.0F - i)) +
+                (((i * 2.0F) - 3.0F) * score_x_offset),
+            kScoreYPosition});
+  };
 
-  auto player2_score = registry_.create();
-  registry_.emplace<core::comp::Name>(player2_score, "Player2Score");
-  registry_.emplace<core::comp::Label>(player2_score, "0", 64, RAYWHITE);
-  registry_.emplace<core::comp::Transform>(
-      player2_score,
-      Vector2{
-          static_cast<float>((settings_.window_width / 2.0F) + score_x_offset),
-          kScoreYPosition});
-
-  auto score_manager = registry_.create();
-  registry_.emplace<core::comp::Name>(score_manager, "ScoreManager");
-  {
-    auto script_builder = core::comp::ScriptBuilder::Create(
-        ReadFileToString("data/scripts/score.lua"), lua_state);
-    core::comp::AddScript(registry_, script_system_, score_manager, "score",
-                          script_builder->GetEntry());
+  for (const auto i : {1, 2}) {
+    create_score(i);
   }
+
+  entity_builder.New("ScoreManager")
+      .CreateScript("data/scripts/score.lua")
+      .RegisterScript();
 }
 
 Game::~Game() { CloseWindow(); }
