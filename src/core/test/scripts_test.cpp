@@ -7,7 +7,7 @@
 #include <sol/object.hpp>
 
 #include "core/comp/name.h"
-#include "core/comp/script.h"
+#include "core/comp/script/script.h"
 #include "core/comp/transform.h"
 
 class ScriptTest : public testing::Test {
