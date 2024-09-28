@@ -7,47 +7,46 @@
 #include <sol/object.hpp>
 
 #include "core/comp/name.h"
+#include "core/comp/script/builder.h"
 #include "core/comp/script/script.h"
 #include "core/comp/transform.h"
 
 class ScriptTest : public testing::Test {
  protected:
-  ScriptTest()
-      : script_system_(
-            registry_, dispatcher_,
-            [this](const std::filesystem::path &) { return script_; }) {}
+  ScriptTest() : script_system_(registry_, dispatcher_) {}
 
   entt::registry registry_;
   entt::dispatcher dispatcher_;
 
   core::sys::ScriptSystem script_system_;
-
-  // Script mock
-  std::string script_;
 };
 
-TEST_F(ScriptTest, Basic) {
-  script_ = "test = 42";
+using core::comp::ScriptBuilder;
 
-  auto id = script_system_.RegisterScript("", {});
+TEST_F(ScriptTest, Basic) {
+  auto script_builder =
+      ScriptBuilder::Create("test = 42", script_system_.GetState());
+
+  auto id = script_system_.RegisterScript(script_builder->GetEntry());
   auto script_entry = script_system_.GetScript(id);
 
   EXPECT_EQ(script_entry.env["test"].get<int>(), 42);
 }
 
 TEST_F(ScriptTest, GetComponentWorks) {
-  script_ =
+  auto script_builder = ScriptBuilder::Create(
       "test = false\n"
       "function OnStart()\n"
       "  if self.GetComponent('Transform') then\n"
       "    test = true\n"
       "  end\n"
-      "end\n";
+      "end\n",
+      script_system_.GetState());
 
   auto e = registry_.create();
   registry_.emplace<core::comp::Transform>(e, Vector2{10.0F, 10.0F});
-  auto script_component =
-      core::comp::AddScript(registry_, script_system_, e, "");
+  auto script_component = core::comp::AddScript(registry_, script_system_, e,
+                                                "", script_builder->GetEntry());
   ASSERT_TRUE(script_component.has_value());
 
   script_system_.OnStart();
@@ -57,15 +56,17 @@ TEST_F(ScriptTest, GetComponentWorks) {
 }
 
 TEST_F(ScriptTest, ComponentModified) {
-  script_ =
+  auto script_builder = ScriptBuilder::Create(
       "function OnStart()\n"
       "  self.GetComponent('Transform').position.x = 42.0\n"
-      "end\n";
+      "end\n",
+      script_system_.GetState());
 
   auto e = registry_.create();
   auto &transform =
       registry_.emplace<core::comp::Transform>(e, Vector2{10.0F, 10.0F});
-  core::comp::AddScript(registry_, script_system_, e, "");
+  core::comp::AddScript(registry_, script_system_, e, "",
+                        script_builder->GetEntry());
 
   script_system_.OnStart();
 
@@ -73,17 +74,18 @@ TEST_F(ScriptTest, ComponentModified) {
 }
 
 TEST_F(ScriptTest, GetEntityWorks) {
-  script_ =
+  auto script_builder = ScriptBuilder::Create(
       "test = false\n"
       "function OnStart()\n"
       "  if GetEntity('TestName') then\n"
       "    test = true\n"
       "  end\n"
-      "end\n";
+      "end\n",
+      script_system_.GetState());
 
   auto e1 = registry_.create();
-  auto script_component =
-      core::comp::AddScript(registry_, script_system_, e1, "");
+  auto script_component = core::comp::AddScript(registry_, script_system_, e1,
+                                                "", script_builder->GetEntry());
   ASSERT_TRUE(script_component.has_value());
 
   auto e2 = registry_.create();
@@ -96,12 +98,12 @@ TEST_F(ScriptTest, GetEntityWorks) {
 }
 
 TEST_F(ScriptTest, ParametesWork) {
-  script_ = "";
+  auto script_builder = ScriptBuilder::Create("", script_system_.GetState())
+                            ->AddParameter("test", 42);
 
   auto e = registry_.create();
-  auto script_component = core::comp::AddScript(
-      registry_, script_system_, e, "",
-      {{"test", sol::make_object(script_system_.GetState(), 42)}});
+  auto script_component = core::comp::AddScript(registry_, script_system_, e,
+                                                "", script_builder.GetEntry());
   ASSERT_TRUE(script_component.has_value());
 
   script_system_.OnStart();
