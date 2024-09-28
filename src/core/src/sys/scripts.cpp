@@ -3,22 +3,21 @@
 #include <raylib.h>
 #include <spdlog/spdlog.h>
 
+#include <sol/error.hpp>
+
 #include "core/comp/collider.h"
 #include "core/comp/label.h"
 #include "core/comp/name.h"
+#include "core/comp/script/entry.h"
 #include "core/comp/script/script.h"
 #include "core/comp/sprite.h"
 #include "core/comp/transform.h"
-#include "core/util/file_reader.h"
 
 namespace core::sys {
 
 ScriptSystem::ScriptSystem(entt::registry &registry,
-                           entt::dispatcher &dispatcher,
-                           util::FileReader file_reader)
-    : registry_(registry),
-      dispatcher_(dispatcher),
-      file_reader_(std::move(file_reader)) {
+                           entt::dispatcher &dispatcher)
+    : registry_(registry), dispatcher_(dispatcher) {
   state_.open_libraries(sol::lib::base, sol::lib::package, sol::lib::math);
 
   RegisterComponents();
@@ -48,12 +47,17 @@ void ScriptSystem::OnStart() {
     auto &script_component = view.get<comp::ScriptComponent>(entity);
 
     for (auto &[name, id] : script_component.scripts) {
-      auto &lua_script = script_entries_[id];
-      auto &env = lua_script.env;
+      auto &entry = script_entries_[id];
+      auto &env = entry.env;
       if (!env.valid()) {
         continue;
       }
-      SetContext(env, lua_script.params, entity);
+
+      try {
+        entry.env["self"] = CreateLuaEntity(entity);
+      } catch (const sol::error &e) {
+        spdlog::error("Failed to add lua entity: {}", e.what());
+      }
 
       sol::function on_start = env["OnStart"];
       if (on_start.valid()) {
@@ -130,33 +134,10 @@ std::optional<entt::entity> ScriptSystem::GetEntity(const std::string &name) {
   }
   return std::nullopt;
 }
-int ScriptSystem::RegisterScript(
-    const std::filesystem::path &path,
-    const std::unordered_map<std::string, sol::object> &params) {
-  sol::environment env(state_, sol::create, state_.globals());
-  std::string script;
 
-  try {
-    script = file_reader_(path);
-  } catch (const util::FileReaderError &err) {
-    spdlog::error("Couldn't load script file: {}", err.what());
-    return -1;
-  }
-
-  state_.script(script, env);
-  script_entries_.emplace_back(env, params);
+int ScriptSystem::RegisterScript(comp::ScriptEntry entry) noexcept {
+  script_entries_.push_back(std::move(entry));
   return script_entries_.size() - 1;
-}
-
-void ScriptSystem::SetContext(
-    sol::environment &env,
-    const std::unordered_map<std::string, sol::object> &params,
-    entt::entity entity) {
-  env["self"] = CreateLuaEntity(entity);
-
-  for (const auto &[name, value] : params) {
-    env[name] = value;
-  }
 }
 
 void ScriptSystem::HandleCollision(const comp::CollisionEvent &event) {
@@ -235,7 +216,7 @@ sol::object ScriptSystem::GetComponent(entt::entity entity,
   return sol::nil;
 }
 
-ScriptSystem::ScriptEntry &ScriptSystem::GetScript(const int id) {
+comp::ScriptEntry &ScriptSystem::GetScript(const int id) {
   return script_entries_[id];
 }
 

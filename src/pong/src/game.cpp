@@ -11,7 +11,7 @@
 #include <core/sys/render.h>
 #include <raylib.h>
 
-#include <sol/forward.hpp>
+#include "core/util/file_reader.h"
 
 namespace pong {
 
@@ -50,6 +50,7 @@ void Game::Render() noexcept { core::sys::Render(registry_); }
 Game::Game(Game::Settings const settings) noexcept
     : settings_(settings), script_system_(registry_, dispatcher_) {
   using namespace std::literals;
+  using core::util::ReadFileToString;
 
   constexpr auto kPaddleXOffset = 30.0F;
   constexpr auto kPaddleColor = RAYWHITE;
@@ -64,10 +65,16 @@ Game::Game(Game::Settings const settings) noexcept
   registry_.emplace<core::comp::Transform>(
       player1, Vector2{kPaddleXOffset, paddle_y_position});
   registry_.emplace<core::comp::Sprite>(player1, kPaddleSize, kPaddleColor);
-  core::comp::AddScript(
-      registry_, script_system_, player1, "data/scripts/player.lua",
-      {{"isPlayerOne", sol::make_object(script_system_.GetState(), true)}});
   registry_.emplace<core::comp::Collider>(player1, kPaddleSize);
+  auto &lua_state = script_system_.GetState();
+  {
+    auto script_builder =
+        core::comp::ScriptBuilder::Create(
+            ReadFileToString("data/scripts/player.lua"), lua_state)
+            ->AddParameter("isPlayerOne", true);
+    core::comp::AddScript(registry_, script_system_, player1, "player",
+                          script_builder.GetEntry());
+  }
 
   // Create player2
   auto player2 = registry_.create();
@@ -76,10 +83,15 @@ Game::Game(Game::Settings const settings) noexcept
       player2, Vector2{settings_.window_width - kPaddleXOffset - kPaddleSize.x,
                        paddle_y_position});
   registry_.emplace<core::comp::Sprite>(player2, kPaddleSize, kPaddleColor);
-  core::comp::AddScript(
-      registry_, script_system_, player2, "data/scripts/player.lua",
-      {{"isPlayerOne", sol::make_object(script_system_.GetState(), false)}});
   registry_.emplace<core::comp::Collider>(player2, kPaddleSize);
+  {
+    auto script_builder =
+        core::comp::ScriptBuilder::Create(
+            ReadFileToString("data/scripts/player.lua"), lua_state)
+            ->AddParameter("isPlayerOne", false);
+    core::comp::AddScript(registry_, script_system_, player2, "player",
+                          script_builder.GetEntry());
+  }
 
   constexpr Vector2 kBallSize = {10.0F, 10.0F};
 
@@ -89,9 +101,13 @@ Game::Game(Game::Settings const settings) noexcept
       ball,
       Vector2{settings_.window_width / 2.0F, settings_.window_height / 2.0F});
   registry_.emplace<core::comp::Sprite>(ball, kBallSize, RAYWHITE);
-  core::comp::AddScript(registry_, script_system_, ball,
-                        "data/scripts/ball.lua");
   registry_.emplace<core::comp::Collider>(ball, kBallSize);
+  {
+    auto script_builder = core::comp::ScriptBuilder::Create(
+        ReadFileToString("data/scripts/ball.lua"), lua_state);
+    core::comp::AddScript(registry_, script_system_, ball, "ball",
+                          script_builder->GetEntry());
+  }
 
   constexpr Vector2 kSeparatorSize = {10.0F, 20.0F};
   constexpr auto kSepartorOffset = 10;
@@ -129,22 +145,14 @@ Game::Game(Game::Settings const settings) noexcept
           static_cast<float>((settings_.window_width / 2.0F) + score_x_offset),
           kScoreYPosition});
 
-  // Test builder
-  auto builder = core::comp::ScriptBuilder::Create(
-      "function foo()\n"
-      "  print(test)\n"
-      "end\n",
-      script_system_.GetState());
-  builder->AddParameter("test", 42);
-
-  auto entry = builder->GetEntry();
-  sol::function foo = entry.env["foo"];
-  foo();
-
   auto score_manager = registry_.create();
   registry_.emplace<core::comp::Name>(score_manager, "ScoreManager");
-  core::comp::AddScript(registry_, script_system_, score_manager,
-                        "data/scripts/score.lua");
+  {
+    auto script_builder = core::comp::ScriptBuilder::Create(
+        ReadFileToString("data/scripts/score.lua"), lua_state);
+    core::comp::AddScript(registry_, script_system_, score_manager, "score",
+                          script_builder->GetEntry());
+  }
 }
 
 Game::~Game() { CloseWindow(); }
