@@ -7,6 +7,7 @@
 # General
 #===================#
 build/
+bin/
 
 #===================#
 # C++ Files
@@ -181,3 +182,14 @@ CMakeSettings.json
 # Ignore all local history of files
 .history
 .ionide
+
+#====================#
+# Google Tests
+#====================#
+Testing/
+
+#==================#
+# Clangd
+#==================#
+compile_commands.json
+.cache/
