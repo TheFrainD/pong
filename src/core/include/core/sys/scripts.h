@@ -2,14 +2,14 @@
 
 #include <entt/entity/registry.hpp>
 #include <entt/signal/dispatcher.hpp>
-#include <filesystem>
 #include <optional>
 #include <sol/sol.hpp>
 #include <vector>
 
-#include "comp/collider.h"
+#include "core/comp/collider.h"
+#include "core/comp/script/entry.h"
 
-namespace pong::sys {
+namespace core::sys {
 
 class ScriptSystem {
  public:
@@ -20,27 +20,15 @@ class ScriptSystem {
 
   sol::state &GetState() noexcept { return state_; }
 
-  int RegisterScript(
-      const std::filesystem::path &path,
-      const std::unordered_map<std::string, sol::object> &params);
+  int RegisterScript(comp::ScriptEntry entry) noexcept;
+
+  comp::ScriptEntry &GetScript(int id);
 
  private:
-  struct Script {
-    sol::environment env;
-    std::unordered_map<std::string, sol::object> params;
-
-    Script(sol::environment env,
-           std::unordered_map<std::string, sol::object> params)
-        : env(env), params(params) {}
-  };
-
   void RegisterComponents();
   void RegisterInputModule();
   void RegisterSystemModule();
 
-  void SetContext(sol::environment &env,
-                  const std::unordered_map<std::string, sol::object> &params,
-                  entt::entity entity);
   sol::table CreateLuaEntity(entt::entity entity);
   sol::object GetComponent(entt::entity entity, const std::string &name);
 
@@ -49,9 +37,9 @@ class ScriptSystem {
   std::optional<entt::entity> GetEntity(const std::string &name);
 
   sol::state state_;
-  std::vector<Script> script_envs_;
+  std::vector<comp::ScriptEntry> script_entries_;
   entt::registry &registry_;
   entt::dispatcher &dispatcher_;
 };
 
-}  // namespace pong::sys
+}  // namespace core::sys

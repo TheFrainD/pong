@@ -2,7 +2,7 @@
 
 #include <raylib.h>
 
-namespace pong::comp {
+namespace core::comp {
 
 // Only supports colored rectangles
 struct Sprite {
@@ -10,4 +10,4 @@ struct Sprite {
   Color color;
 };
 
-}  // namespace pong::comp
+}  // namespace core::comp

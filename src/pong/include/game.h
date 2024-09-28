@@ -1,8 +1,8 @@
 #pragma once
 
-#include <entt/entt.hpp>
+#include <core/sys/scripts.h>
 
-#include "sys/scripts.h"
+#include <entt/entt.hpp>
 
 namespace pong {
 class Game {
@@ -29,6 +29,6 @@ class Game {
   entt::registry registry_;
   entt::dispatcher dispatcher_;
 
-  sys::ScriptSystem script_system_;
+  core::sys::ScriptSystem script_system_;
 };
 }  // namespace pong
