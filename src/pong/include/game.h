@@ -1,8 +1,12 @@
 #pragma once
 
+#include <core/scene/scene.h>
 #include <core/sys/scripts.h>
 
 #include <entt/entt.hpp>
+#include <entt/signal/fwd.hpp>
+#include <memory>
+#include <unordered_map>
 
 namespace pong {
 class Game {
@@ -17,7 +21,7 @@ class Game {
 
   void Run() noexcept;
 
-  entt::registry &GetRegistry() noexcept;
+  std::shared_ptr<core::scene::Scene> GetCurrentScene();
 
  private:
   static constexpr auto kTitle = "Pong";
@@ -25,10 +29,12 @@ class Game {
   void Update(float delta_time) noexcept;
   void Render() noexcept;
 
-  Settings settings_;
-  entt::registry registry_;
-  entt::dispatcher dispatcher_;
+  entt::registry &GetRegistry();
+  entt::dispatcher &GetDispatcher();
 
-  core::sys::ScriptSystem script_system_;
+  Settings settings_;
+
+  std::unordered_map<std::string, std::shared_ptr<core::scene::Scene>> scenes_;
+  std::string current_scene_;
 };
 }  // namespace pong
