@@ -21,6 +21,7 @@ entt::registry &Game::GetRegistry() noexcept { return registry_; }
 
 void Game::Run() noexcept {
   InitWindow(settings_.window_width, settings_.window_height, kTitle);
+  SetWindowSize(settings_.window_width, settings_.window_height);
   SetExitKey(KEY_NULL);
 
   script_system_.OnStart();
