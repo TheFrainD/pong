@@ -1,8 +1,12 @@
 #pragma once
 
+#include <core/scene/scene_manager.h>
 #include <core/sys/scripts.h>
 
 #include <entt/entt.hpp>
+#include <entt/signal/fwd.hpp>
+#include <memory>
+#include <unordered_map>
 
 namespace pong {
 class Game {
@@ -17,8 +21,6 @@ class Game {
 
   void Run() noexcept;
 
-  entt::registry &GetRegistry() noexcept;
-
  private:
   static constexpr auto kTitle = "Pong";
 
@@ -26,9 +28,9 @@ class Game {
   void Render() noexcept;
 
   Settings settings_;
-  entt::registry registry_;
-  entt::dispatcher dispatcher_;
 
-  core::sys::ScriptSystem script_system_;
+  core::scene::SceneManager scene_manager_;
+
+  bool running_{};
 };
 }  // namespace pong

@@ -56,4 +56,3 @@ function Update(deltaTime)
 		dy = -dy
 	end
 end
-

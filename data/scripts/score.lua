@@ -18,4 +18,3 @@ function SetPlayer2Score(score)
 	player2Score = score
 	player2ScoreLabel.text = tostring(score)
 end
-

@@ -2,11 +2,12 @@ find_package(GTest REQUIRED)
 
 include(GoogleTest)
 
-add_executable(${PROJECT_NAME}-core-test "main.cpp" "collision_test.cpp"
-                                         "scripts_test.cpp")
+set(TARGET "${CORE_LIB}-test")
 
-target_link_libraries(${PROJECT_NAME}-core-test gtest::gtest
-                      ${PROJECT_NAME}-core)
+file(GLOB_RECURSE "${TARGET}_SOURCES" "*.cpp" "*.h")
 
-gtest_discover_tests(${PROJECT_NAME}-core-test)
+add_executable(${TARGET} ${${TARGET}_SOURCES})
 
+target_link_libraries(${TARGET} gtest::gtest ${CORE_LIB})
+
+gtest_discover_tests(${TARGET})

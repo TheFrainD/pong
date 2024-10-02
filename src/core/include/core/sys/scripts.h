@@ -9,11 +9,16 @@
 #include "core/comp/collider.h"
 #include "core/comp/script/entry.h"
 
+namespace core::scene {
+class SceneManager;
+}
+
 namespace core::sys {
 
 class ScriptSystem {
  public:
-  ScriptSystem(entt::registry &registry, entt::dispatcher &dispatcher);
+  ScriptSystem(entt::registry &registry, entt::dispatcher &dispatcher,
+               scene::SceneManager &scene_manager);
 
   void OnStart();
   void Update(float delta_time);
@@ -28,6 +33,7 @@ class ScriptSystem {
   void RegisterComponents();
   void RegisterInputModule();
   void RegisterSystemModule();
+  void RegisterSceneManager();
 
   sol::table CreateLuaEntity(entt::entity entity);
   sol::object GetComponent(entt::entity entity, const std::string &name);
@@ -40,6 +46,7 @@ class ScriptSystem {
   std::vector<comp::ScriptEntry> script_entries_;
   entt::registry &registry_;
   entt::dispatcher &dispatcher_;
+  scene::SceneManager &scene_manager_;
 };
 
 }  // namespace core::sys

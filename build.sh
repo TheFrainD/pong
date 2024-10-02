@@ -15,7 +15,7 @@ cd build
 echo "Generating CMake project..."
 cmake .. -G Ninja \
   -DCMAKE_PROJECT_TOP_LEVEL_INCLUDES=third-party/cmake-conan/conan_provider.cmake \
-  -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_BUILD_TYPE=Debug \
   -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
 
 echo "Building project..."
