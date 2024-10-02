@@ -1,6 +1,6 @@
 #pragma once
 
-#include <core/scene/scene.h>
+#include <core/scene/scene_manager.h>
 #include <core/sys/scripts.h>
 
 #include <entt/entt.hpp>
@@ -21,20 +21,14 @@ class Game {
 
   void Run() noexcept;
 
-  std::shared_ptr<core::scene::Scene> GetCurrentScene();
-
  private:
   static constexpr auto kTitle = "Pong";
 
   void Update(float delta_time) noexcept;
   void Render() noexcept;
 
-  entt::registry &GetRegistry();
-  entt::dispatcher &GetDispatcher();
-
   Settings settings_;
 
-  std::unordered_map<std::string, std::shared_ptr<core::scene::Scene>> scenes_;
-  std::string current_scene_;
+  core::scene::SceneManager scene_manager_;
 };
 }  // namespace pong

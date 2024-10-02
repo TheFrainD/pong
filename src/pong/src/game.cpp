@@ -26,15 +26,14 @@ void Game::Run() noexcept {
   SetWindowSize(settings_.window_width, settings_.window_height);
   SetExitKey(KEY_NULL);
 
-  GetCurrentScene()->OnStart();
+  scene_manager_.Transition("Main");
 
   // Main loop
   while (!WindowShouldClose()) {
     auto const delta_time = GetFrameTime();
 
-    if (IsKeyDown(KEY_R)) {
-      GetCurrentScene()->Reset();
-      GetCurrentScene()->OnStart();
+    if (IsKeyDown(KEY_K)) {
+      scene_manager_.GetCurrentScene()->Reset();
     }
 
     Update(delta_time);
@@ -49,11 +48,14 @@ void Game::Run() noexcept {
 }
 
 void Game::Update(float const delta_time) noexcept {
-  GetCurrentScene()->Update(delta_time);
-  core::sys::PhysicsUpdate(GetRegistry(), GetDispatcher());
+  scene_manager_.GetCurrentScene()->Update(delta_time);
+  core::sys::PhysicsUpdate(scene_manager_.GetRegistry(),
+                           scene_manager_.GetDispatcher());
 }
 
-void Game::Render() noexcept { core::sys::Render(GetRegistry()); }
+void Game::Render() noexcept {
+  core::sys::Render(scene_manager_.GetRegistry());
+}
 
 Game::Game(Game::Settings const settings) noexcept : settings_(settings) {
   using namespace std::literals;
@@ -136,22 +138,8 @@ Game::Game(Game::Settings const settings) noexcept : settings_(settings) {
         .RegisterScript();
   };
 
-  scenes_.emplace(
-      "Main", std::make_shared<core::scene::Scene>(
-                  main_scene_setup, [](core::scene::Scene &scene, float) {}));
-  current_scene_ = "Main";
-
-  GetCurrentScene()->Setup();
-}
-
-entt::registry &Game::GetRegistry() { return GetCurrentScene()->GetRegistry(); }
-
-entt::dispatcher &Game::GetDispatcher() {
-  return GetCurrentScene()->GetDispatcher();
-}
-
-std::shared_ptr<core::scene::Scene> Game::GetCurrentScene() {
-  return scenes_.at(current_scene_);
+  scene_manager_.CreateScene("Main", main_scene_setup,
+                             [](core::scene::Scene &scene, float) {});
 }
 
 Game::~Game() { CloseWindow(); }

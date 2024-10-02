@@ -4,6 +4,9 @@
 #include <spdlog/spdlog.h>
 
 #include <sol/error.hpp>
+#include <sol/forward.hpp>
+#include <sol/object.hpp>
+#include <sol/types.hpp>
 
 #include "core/comp/collider.h"
 #include "core/comp/label.h"
@@ -12,17 +15,23 @@
 #include "core/comp/script/script.h"
 #include "core/comp/sprite.h"
 #include "core/comp/transform.h"
+#include "core/scene/scene.h"
+#include "core/scene/scene_manager.h"
 
 namespace core::sys {
 
 ScriptSystem::ScriptSystem(entt::registry &registry,
-                           entt::dispatcher &dispatcher)
-    : registry_(registry), dispatcher_(dispatcher) {
+                           entt::dispatcher &dispatcher,
+                           scene::SceneManager &scene_manager)
+    : registry_(registry),
+      dispatcher_(dispatcher),
+      scene_manager_(scene_manager) {
   state_.open_libraries(sol::lib::base, sol::lib::package, sol::lib::math);
 
   RegisterComponents();
   RegisterSystemModule();
   RegisterInputModule();
+  RegisterSceneManager();
 }
 
 void ScriptSystem::RegisterInputModule() {
@@ -33,6 +42,7 @@ void ScriptSystem::RegisterInputModule() {
   key_codes["Up"] = KEY_UP;
   key_codes["Down"] = KEY_DOWN;
   key_codes["Enter"] = KEY_ENTER;
+  key_codes["R"] = KEY_R;
 
   auto input = state_.create_table();
   input.set_function("IsKeyDown", &IsKeyDown);
@@ -81,7 +91,10 @@ void ScriptSystem::Update(float delta_time) {
 
       sol::function update = env["Update"];
       if (update.valid()) {
-        update(delta_time);
+        sol::function_result result = update(delta_time);
+        if (result.return_count() > 0 && !result.get<bool>(0)) {
+          return;
+        }
       }
     }
   }
@@ -111,6 +124,23 @@ void ScriptSystem::RegisterComponents() {
 
   dispatcher_.sink<comp::CollisionEvent>()
       .connect<&ScriptSystem::HandleCollision>(this);
+}
+
+void ScriptSystem::RegisterSceneManager() {
+  auto scene_manager = state_.create_table();
+  scene_manager.set_function("ResetScene", [this]() {
+    auto scene = scene_manager_.GetCurrentScene();
+    if (scene != nullptr) {
+      scene->Reset();
+    }
+
+    return sol::make_object(state_, false);
+  });
+  scene_manager.set_function("Transition", [this](const std::string &name) {
+    scene_manager_.Transition(name);
+  });
+
+  state_["package"]["loaded"]["SceneManager"] = scene_manager;
 }
 
 void ScriptSystem::RegisterSystemModule() {

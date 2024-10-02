@@ -8,12 +8,16 @@
 
 namespace core::scene {
 
+class SceneManager;
+
 class Scene {
  public:
-  Scene(std::function<void(Scene &)> setup,
-        std::function<void(Scene &, float)> update) noexcept;
+  using OnStartFunc = std::function<void(Scene &)>;
+  using UpdateFunc = std::function<void(Scene &, float)>;
 
-  void Setup() noexcept;
+  Scene(SceneManager &scene_manager, OnStartFunc on_start,
+        UpdateFunc update) noexcept;
+
   void OnStart() noexcept;
   void Update(float delta_time) noexcept;
   void Reset() noexcept;
@@ -27,8 +31,8 @@ class Scene {
   entt::dispatcher dispatcher_;
   sys::ScriptSystem script_system_;
 
-  std::function<void(Scene &)> setup_;
-  std::function<void(Scene &, float)> update_;
+  OnStartFunc on_start_;
+  UpdateFunc update_;
 };
 
 }  // namespace core::scene

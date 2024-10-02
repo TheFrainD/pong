@@ -6,15 +6,16 @@
 
 namespace core::scene {
 
-Scene::Scene(std::function<void(Scene &)> setup,
-             std::function<void(Scene &, float)> update) noexcept
-    : script_system_(registry_, dispatcher_),
-      setup_(std::move(setup)),
+Scene::Scene(SceneManager &scene_manager, OnStartFunc on_start,
+             UpdateFunc update) noexcept
+    : script_system_(registry_, dispatcher_, scene_manager),
+      on_start_(std::move(on_start)),
       update_(std::move(update)) {}
 
-void Scene::Setup() noexcept { setup_(*this); }
-
-void Scene::OnStart() noexcept { script_system_.OnStart(); }
+void Scene::OnStart() noexcept {
+  on_start_(*this);
+  script_system_.OnStart();
+}
 
 void Scene::Update(float delta_time) noexcept {
   update_(*this, delta_time);
@@ -24,7 +25,7 @@ void Scene::Update(float delta_time) noexcept {
 void Scene::Reset() noexcept {
   registry_.clear();
   dispatcher_.clear();
-  Setup();
+  OnStart();
 }
 
 entt::registry &Scene::GetRegistry() noexcept { return registry_; }

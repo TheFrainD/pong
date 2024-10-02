@@ -6,18 +6,21 @@
 #include <entt/signal/fwd.hpp>
 #include <sol/object.hpp>
 
-#include "core/comp/script/builder.h"
 #include "core/comp/script/script.h"
 #include "core/comp/transform.h"
 #include "core/entity/builder.h"
+#include "core/scene/scene_manager.h"
+
+namespace {}
 
 class ScriptTest : public testing::Test {
  protected:
-  ScriptTest() : script_system_(registry_, dispatcher_) {}
+  ScriptTest() : script_system_(registry_, dispatcher_, scene_manager_) {}
 
   entt::registry registry_;
   entt::dispatcher dispatcher_;
 
+  core::scene::SceneManager scene_manager_;
   core::sys::ScriptSystem script_system_;
 };
 
