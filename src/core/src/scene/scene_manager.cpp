@@ -29,7 +29,7 @@ void SceneManager::Transition(const std::string &name) noexcept {
   }
 
   if (current_scene_ != nullptr) {
-    current_scene_->Reset();
+    current_scene_->Clear();
   }
 
   auto scene = scenes_.at(name);

@@ -13,7 +13,6 @@
 #include <raylib.h>
 
 #include <entt/entity/fwd.hpp>
-#include <memory>
 
 #include "core/entity/builder.h"
 #include "core/scene/scene.h"
@@ -26,15 +25,13 @@ void Game::Run() noexcept {
   SetWindowSize(settings_.window_width, settings_.window_height);
   SetExitKey(KEY_NULL);
 
-  scene_manager_.Transition("Main");
+  running_ = true;
+
+  scene_manager_.Transition("Menu");
 
   // Main loop
-  while (!WindowShouldClose()) {
+  while (running_) {
     auto const delta_time = GetFrameTime();
-
-    if (IsKeyDown(KEY_K)) {
-      scene_manager_.GetCurrentScene()->Reset();
-    }
 
     Update(delta_time);
 
@@ -44,6 +41,10 @@ void Game::Run() noexcept {
     Render();
 
     EndDrawing();
+
+    if (WindowShouldClose()) {
+      running_ = false;
+    }
   }
 }
 
@@ -138,8 +139,42 @@ Game::Game(Game::Settings const settings) noexcept : settings_(settings) {
         .RegisterScript();
   };
 
+  scene_manager_.CreateScene(
+      "Menu",
+      [this](core::scene::Scene &scene) {
+        auto text_width = MeasureText("PONG", 100);
+        auto entity_builder =
+            core::entity::EntityBuilder("Title", scene.GetRegistry(),
+                                        scene.GetScriptSystem())
+                .AddComponent<core::comp::Transform>(Vector2{
+                    (settings_.window_width / 2.0F) - (text_width / 2.0F),
+                    (settings_.window_height / 2.0F) - 100.0F})
+                .AddComponent<core::comp::Label>("PONG", 100, RAYWHITE);
+
+        text_width = MeasureText("Press 'Enter' to start", 32);
+        entity_builder.New("Hint")
+            .AddComponent<core::comp::Transform>(
+                Vector2{(settings_.window_width / 2.0F) - (text_width / 2.0F),
+                        (settings_.window_height / 2.0F)})
+            .AddComponent<core::comp::Label>("Press 'Enter' to start", 32,
+                                             RAYWHITE);
+      },
+      [this](core::scene::Scene &, float) {
+        if (IsKeyDown(KEY_ENTER)) {
+          scene_manager_.Transition("Main");
+        }
+
+        if (IsKeyPressed(KEY_ESCAPE)) {
+          running_ = false;
+        }
+      });
+
   scene_manager_.CreateScene("Main", main_scene_setup,
-                             [](core::scene::Scene &scene, float) {});
+                             [this](core::scene::Scene &, float) {
+                               if (IsKeyDown(KEY_ESCAPE)) {
+                                 scene_manager_.Transition("Menu");
+                               }
+                             });
 }
 
 Game::~Game() { CloseWindow(); }

@@ -23,9 +23,13 @@ void Scene::Update(float delta_time) noexcept {
 }
 
 void Scene::Reset() noexcept {
+  Clear();
+  OnStart();
+}
+
+void Scene::Clear() noexcept {
   registry_.clear();
   dispatcher_.clear();
-  OnStart();
 }
 
 entt::registry &Scene::GetRegistry() noexcept { return registry_; }

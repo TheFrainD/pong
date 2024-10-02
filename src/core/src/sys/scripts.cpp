@@ -43,6 +43,7 @@ void ScriptSystem::RegisterInputModule() {
   key_codes["Down"] = KEY_DOWN;
   key_codes["Enter"] = KEY_ENTER;
   key_codes["R"] = KEY_R;
+  key_codes["Escape"] = KEY_ESCAPE;
 
   auto input = state_.create_table();
   input.set_function("IsKeyDown", &IsKeyDown);
@@ -138,6 +139,8 @@ void ScriptSystem::RegisterSceneManager() {
   });
   scene_manager.set_function("Transition", [this](const std::string &name) {
     scene_manager_.Transition(name);
+
+    return sol::make_object(state_, false);
   });
 
   state_["package"]["loaded"]["SceneManager"] = scene_manager;

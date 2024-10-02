@@ -30,5 +30,7 @@ class Game {
   Settings settings_;
 
   core::scene::SceneManager scene_manager_;
+
+  bool running_{};
 };
 }  // namespace pong

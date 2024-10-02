@@ -20,6 +20,7 @@ class Scene {
 
   void OnStart() noexcept;
   void Update(float delta_time) noexcept;
+  void Clear() noexcept;
   void Reset() noexcept;
 
   entt::registry &GetRegistry() noexcept;
