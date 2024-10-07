@@ -1,3 +1,6 @@
 [submodule "third-party/cmake-conan"]
 	path = third-party/cmake-conan
 	url = https://github.com/conan-io/cmake-conan.git
+[submodule "third-party/sol2"]
+	path = third-party/sol2
+	url = git@github.com:TheFrainD/sol2.git
