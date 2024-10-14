@@ -40,10 +40,10 @@ function Update(deltaTime)
 	transform.position.x = transform.position.x + dx * deltaTime
 
 	if transform.position.x < 0 then
-		scoreManager.SetPlayer2Score(scoreManager.player2Score + 1)
+		scoreManager.SetPlayerTwoScore(scoreManager.Score.player_one + 1)
 		resetPosition()
 	elseif transform.position.x > System.Window.GetWidth() then
-		scoreManager.SetPlayer1Score(scoreManager.player1Score + 1)
+		scoreManager.SetPlayerOneScore(scoreManager.Score.player_one + 1)
 		resetPosition()
 	end
 
