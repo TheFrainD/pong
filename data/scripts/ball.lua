@@ -36,7 +36,7 @@ function OnCollision(other)
 	end
 end
 
-function Update(deltaTime)
+function update(deltaTime)
 	transform.position.x = transform.position.x + dx * deltaTime
 
 	if transform.position.x < 0 then

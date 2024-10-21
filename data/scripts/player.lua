@@ -1,8 +1,7 @@
 local Input = require("Input")
 local System = require("System")
-local SceneManager = require("SceneManager")
 
-function Update(deltaTime)
+function update(deltaTime)
 	local speed = 250.0
 
 	local transform = self.GetComponent("Transform")
@@ -25,9 +24,5 @@ function Update(deltaTime)
 		position.y = position.y - speed * deltaTime
 	elseif Input.IsKeyDown(downKey) and position.y < (System.Window.GetHeight() - sprite.size.y) then
 		position.y = position.y + speed * deltaTime
-	end
-
-	if Input.IsKeyDown(Input.Key.R) then
-		return SceneManager.ResetScene()
 	end
 end

@@ -137,6 +137,10 @@ Game::Game(Game::Settings const settings) noexcept : settings_(settings) {
     entity_builder.New("ScoreManager")
         .CreateScript("data/scripts/score.lua")
         .RegisterScript();
+
+    entity_builder.New("State")
+        .CreateScript("data/scripts/state.lua")
+        .RegisterScript();
   };
 
   scene_manager_.CreateScene(
