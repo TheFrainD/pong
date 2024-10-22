@@ -1,7 +1,8 @@
 local System = require("System")
 
+local direction = -1
 local SPEED = 100.0
-local dx = -SPEED
+local dx = 0
 local dy = 0
 
 local transform
@@ -12,7 +13,13 @@ local function resetPosition()
 	transform.position.y = System.Window.GetHeight() / 2.0
 end
 
-function OnStart()
+function Serve(new_direction)
+	direction = new_direction
+	dx = SPEED * direction
+	resetPosition()
+end
+
+function Init()
 	transform = self.GetComponent("Transform")
 	scoreManager = GetEntity("ScoreManager").GetComponent("Score")
 end
@@ -40,7 +47,7 @@ function update(deltaTime)
 	transform.position.x = transform.position.x + dx * deltaTime
 
 	if transform.position.x < 0 then
-		scoreManager.SetPlayerTwoScore(scoreManager.Score.player_one + 1)
+		scoreManager.SetPlayerTwoScore(scoreManager.Score.player_two + 1)
 		resetPosition()
 	elseif transform.position.x > System.Window.GetWidth() then
 		scoreManager.SetPlayerOneScore(scoreManager.Score.player_one + 1)
