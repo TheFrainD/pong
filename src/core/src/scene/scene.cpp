@@ -14,6 +14,7 @@ Scene::Scene(SceneManager &scene_manager, OnStartFunc on_start,
 
 void Scene::OnStart() noexcept {
   on_start_(*this);
+  script_system_.Init();
   script_system_.OnStart();
 }
 

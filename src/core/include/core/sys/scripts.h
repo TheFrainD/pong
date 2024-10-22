@@ -20,6 +20,7 @@ class ScriptSystem {
   ScriptSystem(entt::registry &registry, entt::dispatcher &dispatcher,
                scene::SceneManager &scene_manager);
 
+  void Init();
   void OnStart();
   void Update(float delta_time);
 

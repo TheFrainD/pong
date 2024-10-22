@@ -29,7 +29,7 @@ using core::entity::EntityBuilder;
 TEST_F(ScriptTest, GetComponentWorks) {
   std::string script =
       "test = false\n"
-      "function OnStart()\n"
+      "function Init()\n"
       "  if self.GetComponent('Transform') then\n"
       "    test = true\n"
       "  end\n"
@@ -41,7 +41,7 @@ TEST_F(ScriptTest, GetComponentWorks) {
                .RegisterScript()
                .GetEntity();
 
-  script_system_.OnStart();
+  script_system_.Init();
 
   auto script_component = registry_.get<core::comp::ScriptComponent>(e);
   auto script_entry = script_system_.GetScript(script_component.scripts[""]);
@@ -50,7 +50,7 @@ TEST_F(ScriptTest, GetComponentWorks) {
 
 TEST_F(ScriptTest, ComponentModified) {
   std::string script =
-      "function OnStart()\n"
+      "function Init()\n"
       "  self.GetComponent('Transform').position.x = 42.0\n"
       "end\n";
 
@@ -60,7 +60,7 @@ TEST_F(ScriptTest, ComponentModified) {
                .RegisterScript()
                .GetEntity();
 
-  script_system_.OnStart();
+  script_system_.Init();
 
   auto transform = registry_.get<core::comp::Transform>(e);
   EXPECT_EQ(transform.position.x, 42.0F);

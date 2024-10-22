@@ -52,7 +52,7 @@ void ScriptSystem::RegisterInputModule() {
   state_["package"]["loaded"]["Input"] = input;
 }
 
-void ScriptSystem::OnStart() {
+void ScriptSystem::Init() {
   auto view = registry_.view<comp::ScriptComponent>();
   for (const auto &entity : view) {
     auto &script_component = view.get<comp::ScriptComponent>(entity);
@@ -68,6 +68,26 @@ void ScriptSystem::OnStart() {
         entry.env["self"] = CreateLuaEntity(entity);
       } catch (const sol::error &e) {
         spdlog::error("Failed to add lua entity: {}", e.what());
+      }
+
+      sol::function init = env["Init"];
+      if (init.valid()) {
+        init();
+      }
+    }
+  }
+}
+
+void ScriptSystem::OnStart() {
+  auto view = registry_.view<comp::ScriptComponent>();
+  for (const auto &entity : view) {
+    auto &script_component = view.get<comp::ScriptComponent>(entity);
+
+    for (auto &[name, id] : script_component.scripts) {
+      auto &entry = script_entries_[id];
+      auto &env = entry.env;
+      if (!env.valid()) {
+        continue;
       }
 
       sol::function on_start = env["OnStart"];
